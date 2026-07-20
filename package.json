@@ -6,9 +6,15 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "test:browser": "playwright test",
+    "test:all": "npm test && npm run test:browser"
   },
   "dependencies": {
     "astro": "^7.1.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
   }
 }
