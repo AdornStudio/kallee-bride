@@ -28,7 +28,15 @@ export const site = {
 
   // ── CONTACT ────────────────────────────────────────────────
   phone: '+381 65 2005103',
-  phoneHref: '+38165200510', // no spaces — used for the clickable tap-to-call link
+  /*
+    The tap-to-call link. Derived from `phone` rather than typed out again:
+    it was typed out once, lost its final digit, and every visitor tapping
+    the number on a phone was dialling a different one. A test now checks
+    the two agree, but deriving it means they cannot drift in the first place.
+  */
+  get phoneHref() {
+    return this.phone.replace(/[^0-9+]/g, '');
+  },
 
   // TODO: ADD THE SALON EMAIL HERE.
   // Until this is filled in, the address is hidden from the site
