@@ -1,0 +1,225 @@
+---
+/**
+ * Layout — the shell every page uses.
+ *
+ * It provides: fonts, SEO tags, social-sharing preview, the Google
+ * structured data (so the salon can appear in Maps / local search),
+ * plus the shared Header, Footer and mobile booking bar.
+ *
+ * A page uses it like this:
+ *   <Layout title="Kolekcije" description="...">  ...page content...  </Layout>
+ */
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyBookBar from '../components/StickyBookBar.astro';
+import { site } from '../data/site.js';
+import { t, htmlLang, hreflang, defaultLang } from '../data/i18n.js';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** True for pages whose hero is full-bleed (Home). */
+  transparentHeader?: boolean;
+  /** Social sharing image, e.g. '/images/og-home.jpg' */
+  ogImage?: string;
+  /** Page language. */
+  lang?: 'sr' | 'en';
+  /** Path to this same page in the other language — powers the SR/EN toggle. */
+  altHref: string;
+}
+
+const {
+  title,
+  description,
+  transparentHeader = false,
+  ogImage = '/images/og-default.jpg',
+  lang = 'sr',
+  altHref,
+} = Astro.props;
+
+const s = t(lang);
+const pageDescription = description ?? site.description;
+
+// Absolute URLs for both language versions of this page — needed by the
+// hreflang tags below.
+const srHref = lang === 'sr' ? Astro.url.pathname : altHref;
+const enHref = lang === 'en' ? Astro.url.pathname : altHref;
+
+// "Kolekcije — Kallee Bride" on inner pages, but no duplication on Home.
+const fullTitle = title.includes(site.name) ? title : `${title} — ${site.name}`;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = new URL(ogImage, Astro.site);
+
+/**
+ * Structured data (JSON-LD).
+ * This is invisible to visitors but tells Google the salon's name,
+ * address, hours and phone — the basis of local SEO.
+ */
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BridalShop',
+  name: site.name,
+  description: pageDescription,
+  url: Astro.site?.toString(),
+  telephone: site.phone,
+  ...(site.email ? { email: site.email } : {}),
+  image: ogImageUrl.toString(),
+  priceRange: '$$$',
+  currenciesAccepted: 'RSD, EUR',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    postalCode: site.address.postalCode,
+    addressCountry: site.address.countryCode,
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: site.address.lat,
+    longitude: site.address.lng,
+  },
+  openingHoursSpecification: site.hoursSchema.map((h) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: h.days,
+    opens: h.opens,
+    closes: h.closes,
+  })),
+  sameAs: [site.instagram.salon.url, site.instagram.brand.url],
+  brand: { '@type': 'Brand', name: site.parentBrand },
+  areaServed: { '@type': 'City', name: 'Novi Sad' },
+};
+---
+
+<!doctype html>
+<!-- sr-Latn-RS = Serbian in Latin script; en for the English version -->
+<html lang={htmlLang[lang]}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonical} />
+
+    <!--
+      hreflang — tells Google these two pages are the same content in two
+      languages. Without it the Serbian and English versions look like
+      duplicates competing with each other, and both get demoted.
+      `x-default` is the version shown when no language matches.
+    -->
+    <link rel="alternate" hreflang={hreflang.sr} href={new URL(srHref, Astro.site)} />
+    <link rel="alternate" hreflang={hreflang.en} href={new URL(enHref, Astro.site)} />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={new URL(lang === defaultLang ? Astro.url.pathname : altHref, Astro.site)}
+    />
+
+    <!-- Social sharing preview (WhatsApp, Instagram DMs, Facebook) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content={lang === 'sr' ? 'sr_RS' : 'en_GB'} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#14110f" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- Fonts: preconnect first so they start downloading sooner -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap"
+    />
+
+    <!--
+      Cross-page transitions. Pages fade into one another instead of
+      flashing white on every click, which is what makes a multi-page
+      site feel like one continuous place.
+      Astro disables this automatically for prefers-reduced-motion.
+      NOTE: because navigation is now client-side, every inline script
+      must re-run on `astro:page-load` — see the scripts below and in
+      Header.astro / StickyBookBar.astro / zakazivanje.astro.
+    -->
+    <ClientRouter />
+
+    <!-- Local-SEO structured data -->
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  </head>
+
+  <body>
+    <!-- Lets keyboard users jump straight to content -->
+    <a href="#main" class="skip-link">{s.skipToContent}</a>
+
+    <Header transparent={transparentHeader} lang={lang} altHref={altHref} />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer lang={lang} />
+    <StickyBookBar lang={lang} />
+
+    <script>
+      /**
+       * Scroll reveal — fades elements in as they enter the screen.
+       *
+       * Items that sit side by side (a row of collection cards, a gallery
+       * of gowns) reveal in sequence rather than all at once. That short
+       * cascade is what separates "elements appeared" from "the page
+       * unfolded" — it is the cheapest luxury cue available.
+       *
+       * Skipped entirely when the visitor prefers reduced motion.
+       */
+      const STAGGER_MS = 60;   // gap between neighbours
+      const STAGGER_MAX = 300; // never make the last item wait longer than this
+
+      function initReveal() {
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const items = document.querySelectorAll('[data-reveal]');
+
+        if (reduced || !('IntersectionObserver' in window)) {
+          items.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+
+        // Give each element a delay based on its position among revealing
+        // siblings, so groups cascade and standalone blocks stay instant.
+        items.forEach((el) => {
+          const parent = el.parentElement;
+          if (!parent) return;
+          const group = Array.from(parent.children).filter((c) =>
+            c.hasAttribute('data-reveal')
+          );
+          const index = group.indexOf(el);
+          if (index > 0) {
+            el.style.transitionDelay = Math.min(index * STAGGER_MS, STAGGER_MAX) + 'ms';
+          }
+        });
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target); // reveal once, then stop watching
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
+        );
+        items.forEach((el) => observer.observe(el));
+      }
+
+      // Runs on first load and again after every page transition.
+      document.addEventListener('astro:page-load', initReveal);
+    </script>
+  </body>
+</html>

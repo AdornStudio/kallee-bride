@@ -1,0 +1,7 @@
+---
+// English about page  →  /en/about
+import AboutPage from '../../components/pages/AboutPage.astro';
+import { path } from '../../data/i18n.js';
+---
+
+<AboutPage lang="en" altHref={path('about', 'sr')} />

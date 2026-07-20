@@ -1,0 +1,71 @@
+---
+/**
+ * LangSwitch — the SR / EN toggle.
+ *
+ * It is a real link, not a script, so it works before JavaScript loads
+ * and search engines can follow it.
+ *
+ * `altHref` is passed in by each page and points at the SAME page in the
+ * other language — not at the home page. A bride reading about Pure Grace
+ * who switches to English lands on Pure Grace in English, which is the
+ * whole point of a language toggle.
+ */
+import { t, otherLang, langLabels } from '../data/i18n.js';
+
+interface Props {
+  lang: 'sr' | 'en';
+  /** Path to this same page in the other language. */
+  altHref: string;
+  /** Slightly smaller variant used inside the mobile menu. */
+  variant?: 'header' | 'menu';
+}
+
+const { lang, altHref, variant = 'header' } = Astro.props;
+
+const other = otherLang(lang);
+const strings = t(lang);
+---
+
+<a
+  href={altHref}
+  class={`lang lang--${variant}`}
+  hreflang={other}
+  aria-label={strings.switchLangAria}
+>
+  <span class={lang === 'sr' ? 'is-active' : ''}>{langLabels.sr}</span>
+  <span class="lang__sep" aria-hidden="true">/</span>
+  <span class={lang === 'en' ? 'is-active' : ''}>{langLabels.en}</span>
+</a>
+
+<style>
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-decoration: none;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: color var(--dur-hover) ease;
+  }
+
+  /* The current language is the solid one; the other is the invitation. */
+  .lang span { transition: color var(--dur-hover) ease; }
+  .lang .is-active { color: var(--ink); }
+  .lang__sep { color: var(--line-soft); }
+
+  .lang:hover span:not(.is-active) { color: var(--gold-deep); }
+
+  /* Comfortable tap target on phones without visually bulking up. */
+  .lang--header {
+    padding: 0.9rem 0.25rem;
+    margin-right: 0.25rem;
+  }
+
+  .lang--menu {
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    padding-block: 0.5rem;
+  }
+</style>

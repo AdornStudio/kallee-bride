@@ -1,0 +1,7 @@
+---
+// English booking page  →  /en/book-a-fitting
+import BookingPage from '../../components/pages/BookingPage.astro';
+import { path } from '../../data/i18n.js';
+---
+
+<BookingPage lang="en" altHref={path('booking', 'sr')} />

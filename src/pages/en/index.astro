@@ -1,0 +1,7 @@
+---
+// English home page  →  /en/
+import HomePage from '../../components/pages/HomePage.astro';
+import { path } from '../../data/i18n.js';
+---
+
+<HomePage lang="en" altHref={path('home', 'sr')} />

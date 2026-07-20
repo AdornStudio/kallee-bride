@@ -1,0 +1,96 @@
+---
+/**
+ * COLLECTIONS PAGE — shared by both languages.
+ * Add a collection in src/data/collections.js and it appears here
+ * automatically, in both languages.
+ */
+import Layout from '../../layouts/Layout.astro';
+import CollectionCard from '../CollectionCard.astro';
+import { collections } from '../../data/collections.js';
+import { t, path as routePath } from '../../data/i18n.js';
+
+interface Props {
+  lang: 'sr' | 'en';
+  altHref: string;
+}
+const { lang, altHref } = Astro.props;
+
+const s = t(lang);
+const c = s.collections;
+---
+
+<Layout
+  title={c.metaTitle}
+  description={c.metaDescription}
+  lang={lang}
+  altHref={altHref}
+>
+  <section class="page-head">
+    <div class="container">
+      <span class="eyebrow">{c.eyebrow}</span>
+      <h1 set:html={c.title} />
+      <p class="page-head__lead">{c.lead}</p>
+    </div>
+  </section>
+
+  <section class="section section--top-tight">
+    <div class="container">
+      <!-- --cols keeps the grid honest when there are fewer than three
+           collections: two cards fill the row instead of leaving a hole. -->
+      <div class="grid" style={`--cols: ${Math.min(collections.length, 3)}`}>
+        {collections.map((item, i) => (
+          <CollectionCard
+            collection={item}
+            lang={lang}
+            index={String(i + 1).padStart(2, '0')}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container cta-band__inner" data-reveal>
+      <span class="eyebrow">{c.ctaEyebrow}</span>
+      <h2>{c.ctaTitle}</h2>
+      <p>{c.ctaText}</p>
+      <a href={routePath('booking', lang)} class="btn">{s.bookCta}</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page-head {
+    padding-top: calc(var(--header-h) + clamp(3rem, 9vw, 6rem));
+    padding-bottom: clamp(2.5rem, 6vw, 4rem);
+    background: var(--ivory-deep);
+  }
+  .page-head__lead {
+    max-width: 52ch;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    margin-top: 1.75rem;
+  }
+
+  .section--top-tight { padding-top: clamp(3rem, 7vw, 5rem); }
+
+  .grid { display: grid; gap: clamp(2.75rem, 5vw, 3.5rem); }
+
+  .cta-band {
+    background:
+      radial-gradient(80% 120% at 50% 0%, #ffffff 0%, transparent 55%),
+      linear-gradient(180deg, var(--warm) 0%, #f6ead8 100%);
+    padding-block: clamp(4rem, 10vw, 7rem);
+    text-align: center;
+  }
+  .cta-band__inner { display: flex; flex-direction: column; align-items: center; }
+  .cta-band h2 { margin-bottom: 1.25rem; }
+  .cta-band p { max-width: 46ch; line-height: 1.8; margin-bottom: 2.25rem; }
+
+  @media (min-width: 640px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1000px) {
+    .grid { grid-template-columns: repeat(var(--cols, 3), 1fr); }
+  }
+</style>

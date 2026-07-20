@@ -1,0 +1,295 @@
+/* ═══════════════════════════════════════════════════════════════
+   KALLEE BRIDE — DESIGN SYSTEM
+   Colours, fonts and spacing are defined ONCE here and used by
+   every page. Change a value here and the whole site follows.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── COLOURS — light & warm ─────────────────────────────────
+     Three background tones give rhythm without ever going dark:
+       --ivory       bright milky base
+       --ivory-deep  warm sand, for alternating sections
+       --warm        champagne, for the "feature" sections
+     Two golds on purpose:
+       --gold      decorative only (hairlines, rules) — too light for text
+       --gold-deep readable accent TEXT — 6.0:1 on ivory, 5.0:1 on
+                   champagne, so it passes AA on every background here.
+     ────────────────────────────────────────────────────────── */
+  --ivory: #fdfbf7;         /* page background */
+  --ivory-deep: #f5efe5;    /* alternating section background */
+  --warm: #f0e4d2;          /* champagne feature sections */
+  --ink: #241f1b;           /* headings — 15.8:1 on ivory */
+  --ink-soft: #3a322b;      /* softer dark surface */
+  --muted: #6b6259;         /* body text — 5.9:1 on ivory, passes AA */
+  --gold: #b08a52;          /* decorative rules and hairlines only */
+  --gold-deep: #7a5c2e;     /* accent TEXT — passes AA on all 3 tones */
+  --line: #e6ddce;          /* hairline borders */
+  --line-soft: #dcd0bc;     /* hairline borders on warm sections */
+  --line-dark: #3a332c;     /* kept for the few remaining dark surfaces */
+
+  /* ── TYPE ──────────────────────────────────────────────────── */
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-body: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* ── SPACING ───────────────────────────────────────────────── */
+  --section-y: clamp(4.5rem, 11vw, 9.5rem);   /* vertical section rhythm */
+  --gutter: clamp(1.25rem, 5vw, 3rem);        /* page side margins */
+  --max-w: 1280px;
+  --max-prose: 62ch;
+
+  --header-h: 68px;
+
+  /* ── MOTION ────────────────────────────────────────────────
+     Defined once so every animation on the site shares the same
+     character. Built-in CSS easings are too weak for deliberate
+     motion — these curves are stronger and read as intentional.
+     ────────────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* entrances, exits, press */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);  /* movement across the screen */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);     /* slow editorial reveals */
+
+  --dur-press: 160ms;   /* finger-down feedback */
+  --dur-hover: 220ms;   /* colour changes */
+  --dur-ui: 260ms;      /* menus, small state changes */
+  --dur-reveal: 800ms;  /* scroll reveals — slow on purpose */
+}
+
+/* ── RESET ───────────────────────────────────────────────────── */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+* { margin: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--ivory);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img, picture, svg, video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* ── HEADINGS ────────────────────────────────────────────────── */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--ink);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 { font-size: clamp(2.75rem, 9vw, 6rem); }
+h2 { font-size: clamp(2rem, 5.5vw, 3.5rem); }
+h3 { font-size: clamp(1.4rem, 3vw, 1.9rem); }
+
+p { text-wrap: pretty; }
+
+a { color: inherit; }
+
+/* ── LAYOUT HELPERS ──────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section { padding-block: var(--section-y); }
+
+.section--tint { background: var(--ivory-deep); }
+
+/* Champagne "feature" section — replaces the old near-black block.
+   Text stays ink, so contrast is high and the page stays bright. */
+.section--warm { background: var(--warm); }
+
+.prose { max-width: var(--max-prose); }
+
+/* ── EYEBROW (small uppercase label above headings) ──────────── */
+.eyebrow {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 1.35rem;
+}
+
+/* Decorative hairline used under eyebrows / between sections */
+.rule {
+  width: 56px;
+  height: 1px;
+  background: var(--gold);
+  border: 0;
+  margin: 0;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────────
+   Sharp corners, wide letter-spacing — reads couture rather
+   than app-like. Generous tap target for phones (min 48px).
+   ─────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0.9rem 2.4rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--ivory);
+  cursor: pointer;
+  transition: background var(--dur-hover) ease,
+              color var(--dur-hover) ease,
+              border-color var(--dur-hover) ease,
+              transform var(--dur-press) var(--ease-out);
+}
+.btn:hover { background: transparent; color: var(--ink); }
+
+/* Press feedback. On a phone this is the only physical confirmation a
+   bride gets that her tap registered — without it the button feels dead.
+   Kept subtle: 0.97, never a bounce. */
+.btn:active { transform: scale(0.97); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+}
+.btn--ghost:hover { background: var(--ink); color: var(--ivory); }
+
+/* On dark sections the colours invert */
+.btn--light {
+  background: var(--ivory);
+  border-color: var(--ivory);
+  color: var(--ink);
+}
+.btn--light:hover { background: transparent; color: var(--ivory); }
+
+.btn--outline-light {
+  background: transparent;
+  border-color: rgba(251, 249, 245, 0.45);
+  color: var(--ivory);
+}
+.btn--outline-light:hover { background: var(--ivory); color: var(--ink); border-color: var(--ivory); }
+
+/* ── TEXT LINK WITH UNDERLINE REVEAL ─────────────────────────── */
+.link-underline {
+  display: inline-block;
+  position: relative;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--gold);
+  transition: color var(--dur-hover) ease, border-color var(--dur-hover) ease;
+}
+.link-underline:hover { color: var(--gold-deep); border-color: var(--gold-deep); }
+
+/* Invisible pad so a fingertip has ~44px to aim at, without shifting the
+   underline away from the text. */
+.link-underline::after {
+  content: '';
+  position: absolute;
+  inset: -10px 0;
+}
+
+/* ── ACCESSIBILITY ───────────────────────────────────────────── */
+
+/* Visible keyboard focus — required for keyboard navigation. */
+:focus-visible {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 3px;
+}
+
+/* Skip link — lets keyboard users jump past the nav. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 999;
+  background: var(--ink);
+  color: var(--ivory);
+  padding: 0.9rem 1.5rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.skip-link:focus { left: 0; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── SCROLL REVEAL ───────────────────────────────────────────
+   Elements marked [data-reveal] fade up when scrolled into view.
+   Fully disabled for anyone who prefers reduced motion.
+   ─────────────────────────────────────────────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  /* transition-delay is set per element in Layout.astro to stagger groups */
+  transition: opacity var(--dur-reveal) var(--ease-soft),
+              transform var(--dur-reveal) var(--ease-soft);
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  /* Reduced motion means LESS movement, not zero feedback. Killing every
+     transition would also kill hover highlights and focus rings — the
+     cues that tell a visitor the interface responded. So we drop motion
+     properties and keep colour and opacity. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity, color, background-color, border-color,
+                         outline-color, box-shadow !important;
+    transition-duration: 200ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  /* Content must never stay invisible when motion is off. */
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+}

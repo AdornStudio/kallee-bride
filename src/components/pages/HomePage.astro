@@ -1,0 +1,696 @@
+---
+/**
+ * HOME PAGE — shared by both languages.
+ * Rendered by src/pages/index.astro (sr) and src/pages/en/index.astro (en).
+ * All text comes from src/data/i18n.js — nothing here is hard-coded.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Figure from '../Figure.astro';
+import CollectionCard from '../CollectionCard.astro';
+import { site } from '../../data/site.js';
+import { featuredCollections } from '../../data/collections.js';
+import { t, path as routePath } from '../../data/i18n.js';
+
+interface Props {
+  lang: 'sr' | 'en';
+  altHref: string;
+}
+const { lang, altHref } = Astro.props;
+
+const s = t(lang);
+const h = s.home;
+
+/**
+ * HERO FILMS — short silent clips that take turns behind the headline.
+ *
+ * Clips are fetched one at a time, never up front, so the page is never
+ * waiting on 12 MB of video. To change the rotation: re-order, add or
+ * remove lines. An empty list falls back to the warm gradient panel.
+ */
+const heroFilms = ['/videos/olivia.mp4', '/videos/mia.mp4', '/videos/holly.mp4'];
+
+/**
+ * The opening frame of the FIRST clip above, so the still and the moving
+ * image are the same picture. Re-cut it if you re-order heroFilms —
+ * otherwise the hero visibly jumps when playback starts.
+ */
+const heroPoster = '/images/hero-poster.jpg';
+
+/**
+ * ⚠️  TODO — REPLACE WITH REAL TESTIMONIALS
+ * These are PLACEHOLDER quotes written to show the design. They are NOT
+ * real brides. Replace with genuine reviews (with permission) before launch.
+ */
+const testimonials = {
+  sr: [
+    { quote: 'Obišla sam pet salona i nigde se nisam osećala ovako mirno. Ovde niko nije žurio, ni mene ni sebe.', name: 'Milica', meta: 'venčanje 2024.' },
+    { quote: 'Došla sam sa idejom šta želim i izašla sa nečim potpuno drugačijim — i savršenim. Hvala na strpljenju.', name: 'Jovana', meta: 'venčanje 2024.' },
+    { quote: 'Mama je plakala kada sam izašla iz kabine. To je bio trenutak kada smo obe znale.', name: 'Anđela', meta: 'venčanje 2025.' },
+  ],
+  en: [
+    { quote: 'I visited five salons and nowhere else felt this calm. Nobody was rushing me — or themselves.', name: 'Milica', meta: 'married 2024' },
+    { quote: 'I arrived knowing exactly what I wanted and left with something completely different — and perfect. Thank you for the patience.', name: 'Jovana', meta: 'married 2024' },
+    { quote: 'My mother cried when I stepped out of the fitting room. That was the moment we both knew.', name: 'Anđela', meta: 'married 2025' },
+  ],
+};
+---
+
+<Layout
+  title={`${site.name} — ${h.metaTitleSuffix}`}
+  description={site.description}
+  transparentHeader={true}
+  lang={lang}
+  altHref={altHref}
+>
+  <!-- ═══════════════ 1. HERO ═══════════════ -->
+  <section class="hero">
+    <div class="hero__media">
+      {heroFilms.length > 0 ? (
+        /*
+          Two players, so one can fade in while the other fades out —
+          swapping the source of a single element would flash a blank frame.
+
+          The first one carries the poster: it is the opening frame of the
+          first clip, so what paints instantly is exactly what starts moving
+          a moment later — no photo underneath, no visible switch. It is
+          also what stays on screen for anyone we do not serve video to
+          (reduced motion, metered data, autoplay blocked).
+        */
+        <>
+          <video
+            class="hero__film is-live"
+            data-hero-film
+            poster={heroPoster}
+            aria-label={h.heroFilmAlt}
+            muted
+            playsinline
+            preload="none"></video>
+          <video
+            class="hero__film"
+            data-hero-film
+            muted
+            playsinline
+            preload="none"
+            aria-hidden="true"></video>
+        </>
+      ) : (
+        <div class="hero__fallback" aria-hidden="true"></div>
+      )}
+
+      <!-- Scrim: guarantees the text stays readable over ANY photo -->
+      <div class="hero__scrim" aria-hidden="true"></div>
+    </div>
+
+    <div class="container hero__content">
+      <span class="hero__eyebrow">{h.heroEyebrow} · {site.parentBrand}</span>
+      <h1 class="hero__title">{site.name}</h1>
+      <p class="hero__tagline">{site.tagline[lang]}</p>
+
+      <div class="hero__actions">
+        <a href={routePath('booking', lang)} class="btn">{s.bookCta}</a>
+        <a href={routePath('collections', lang)} class="btn btn--ghost">{h.viewCollections}</a>
+      </div>
+
+      <p class="hero__location">{site.address.street} · {site.address.city}</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 2. ATELIER INTRO ═══════════════ -->
+  <section class="section">
+    <div class="container intro">
+      <div class="intro__text" data-reveal>
+        <span class="eyebrow">{h.introEyebrow}</span>
+        <h2>{h.introTitle}</h2>
+        <p>{h.introP1a} <em>{site.parentBrand}</em> {h.introP1b}</p>
+        <p>{h.introP2}</p>
+        <a href={routePath('about', lang)} class="link-underline">{h.introLink}</a>
+      </div>
+
+      <div class="intro__media" data-reveal>
+        <Figure src="/images/salon-1.jpg" ratio="4/5" label="Salon" alt={h.salonAlt} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 3. COLLECTIONS ═══════════════ -->
+  <section class="section section--tint">
+    <div class="container">
+      <header class="sec-head" data-reveal>
+        <div>
+          <span class="eyebrow">{h.collectionsEyebrow}</span>
+          <h2 set:html={h.collectionsTitle} />
+        </div>
+        <p class="sec-head__aside">{h.collectionsAside}</p>
+      </header>
+
+      <!-- --cols keeps the grid honest when there are fewer than three
+           collections: two cards fill the row instead of leaving a hole. -->
+      <div class="grid-3" style={`--cols: ${Math.min(featuredCollections.length, 3)}`}>
+        {featuredCollections.map((c, i) => (
+          <CollectionCard collection={c} lang={lang} index={String(i + 1).padStart(2, '0')} />
+        ))}
+      </div>
+
+      <div class="sec-foot" data-reveal>
+        <a href={routePath('collections', lang)} class="btn btn--ghost">{h.allCollections}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 4. THE FITTING EXPERIENCE ═══════════════ -->
+  <section class="section section--warm">
+    <div class="container">
+      <header class="sec-head" data-reveal>
+        <div>
+          <span class="eyebrow">{h.stepsEyebrow}</span>
+          <h2 set:html={h.stepsTitle} />
+        </div>
+        <p class="sec-head__aside">{h.stepsAside}</p>
+      </header>
+
+      <ol class="steps">
+        {h.steps.map((step) => (
+          <li class="step" data-reveal>
+            <span class="step__n">{step.n}</span>
+            <h3 class="step__title">{step.title}</h3>
+            <p class="step__text">{step.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 5. TESTIMONIALS ═══════════════ -->
+  <section class="section">
+    <div class="container">
+      <header class="sec-head sec-head--center" data-reveal>
+        <div>
+          <span class="eyebrow">{h.testimonialsEyebrow}</span>
+          <h2 set:html={h.testimonialsTitle} />
+        </div>
+      </header>
+
+      <div class="grid-3 quotes">
+        {testimonials[lang].map((item) => (
+          <figure class="quote" data-reveal>
+            <hr class="rule" />
+            <blockquote>{item.quote}</blockquote>
+            <figcaption>
+              <strong>{item.name}</strong>
+              <span>{item.meta}</span>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 6. BOOKING CTA ═══════════════ -->
+  <section class="cta">
+    <div class="container cta__inner" data-reveal>
+      <span class="eyebrow">{h.ctaEyebrow}</span>
+      <h2 class="cta__title" set:html={h.ctaTitle} />
+      <p class="cta__text">{h.ctaText}</p>
+      <div class="cta__actions">
+        <a href={routePath('booking', lang)} class="btn">{s.bookCta}</a>
+        <a href={`tel:${site.phoneHref}`} class="cta__phone">{site.phone}</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script define:vars={{ heroFilms }}>
+  /**
+   * HERO FILMS
+   *
+   * Plays the clips in turn behind the headline, crossfading between them.
+   * The photo underneath is never removed — it is the poster, the fallback
+   * for anyone we choose not to serve video to, and the safety net if a
+   * file fails or autoplay is refused.
+   *
+   * Deliberately does nothing when: the visitor asked for reduced motion,
+   * the browser reports a metered or slow connection, or autoplay is
+   * blocked. In every one of those cases the photo simply stays.
+   */
+  function initHeroFilms() {
+    if (!heroFilms.length) return;
+
+    const players = [...document.querySelectorAll('[data-hero-film]')];
+    if (players.length < 2) return;
+
+    const media = players[0].parentElement;
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Respect metered data and slow links: video is a luxury, not the content.
+    const net = navigator.connection;
+    if (net && (net.saveData || /^(slow-)?2g$/.test(net.effectiveType || ''))) return;
+
+    const FADE_MS = 1400; // must match the CSS transition on .hero__film
+    let index = 0;
+    let live = 0; // which player is on screen
+    let stopped = false;
+
+    /**
+     * Point a player at a clip and let it start pulling the file down.
+     *
+     * We deliberately do NOT wait for `canplaythrough` before playing.
+     * These players carry preload="none", so the browser buffers nothing
+     * until playback is actually requested — waiting for that event first
+     * deadlocks: we wait for the browser, the browser waits for us.
+     * Asking to play is what starts the download.
+     */
+    const prime = (player, src) => {
+      if (player.getAttribute('src') === src) return; // already holds it
+      player.src = src;
+      player.preload = 'auto'; // from here on, buffering ahead is welcome
+      // No load() call: assigning src already restarts resource selection,
+      // and load() additionally throws away whatever is buffered — which,
+      // on a rotation that comes back around, meant re-fetching a clip the
+      // player had already downloaded in full.
+    };
+
+    /** Fade `next` in, fade the current one out, then park it for reuse. */
+    const swapTo = (next) => {
+      const previous = players[live];
+      next.classList.add('is-live');
+      if (previous !== next) {
+        previous.classList.remove('is-live');
+        // Only pause once it is fully invisible, or the freeze shows through.
+        setTimeout(() => {
+          if (previous !== players[live]) previous.pause();
+        }, FADE_MS);
+      }
+      live = players.indexOf(next);
+    };
+
+    /**
+     * Queue up the clip after this one and hand over near the end.
+     * Handing over early — rather than on `ended` — is what makes the
+     * change read as a dissolve instead of a cut.
+     */
+    /** Seconds of lead time given to the next clip before it is needed. */
+    const PRELOAD_LEAD = 3;
+
+    const scheduleNext = (current) => {
+      const standby = players[(players.indexOf(current) + 1) % 2];
+      const nextSrc = heroFilms[(index + 1) % heroFilms.length];
+
+      const tick = () => {
+        if (stopped) return;
+        const left = current.duration - current.currentTime;
+        if (!Number.isFinite(left)) return;
+
+        // Fetch the next clip shortly before it is due rather than the
+        // moment this one starts — otherwise two clips stream at once for
+        // the whole of every clip, doubling the hero's bandwidth.
+        if (left <= PRELOAD_LEAD) prime(standby, nextSrc);
+
+        if (left > FADE_MS / 1000) return;
+
+        // Nulling the handler is the re-entry guard: tick only ever runs
+        // as ontimeupdate, so it cannot fire again once detached.
+        current.ontimeupdate = null;
+
+        standby.currentTime = 0;
+        standby
+          .play()
+          .then(() => {
+            index = (index + 1) % heroFilms.length;
+            swapTo(standby);
+            scheduleNext(standby);
+          })
+          .catch(() => {
+            // The next clip is missing or refused to start. Rather than
+            // freeze on a still frame for good, stay with this one and
+            // arm the handover again for its next time around.
+            current.ontimeupdate = tick;
+          });
+      };
+
+      current.ontimeupdate = tick;
+
+      // Last resort: if no handover happened by the time the clip runs out,
+      // replay it. A looping hero is imperfect; a frozen one looks broken.
+      current.onended = () => {
+        if (!current.classList.contains('is-live')) return;
+        current.currentTime = 0;
+        current.play().catch(() => {});
+      };
+    };
+
+    /**
+     * Try to get the rotation going.
+     *
+     * Browsers refuse the first play() more often than you would expect —
+     * a silent video in a tab that is not on screen gets suspended to save
+     * power, for one. So this is retried whenever the page becomes visible
+     * again, instead of giving up after a single attempt and leaving the
+     * hero frozen on its poster for the rest of the visit.
+     */
+    let started = false;
+    const begin = () => {
+      if (started || stopped || document.hidden) return;
+      const player = players[live];
+      prime(player, heroFilms[index]);
+      player
+        .play()
+        .then(() => {
+          started = true;
+          scheduleNext(player);
+        })
+        .catch(() => {
+          /* Not this time — the poster frame is on screen, so the hero
+             still looks finished. We will try again on the next chance. */
+        });
+    };
+
+    document.addEventListener('visibilitychange', begin);
+
+    /*
+      The observer is the only starter.
+
+      Kicking the first clip off during parse queued a 3.4 MB download
+      ahead of the poster frame — the very image the hero is judged on.
+      The observer fires as soon as layout settles and the hero is in
+      view, which is late enough to stay out of the poster's way and
+      early enough that nobody notices the difference.
+
+      It also stops decoding once the hero scrolls away, and is a second
+      chance to start if the first play() was refused.
+    */
+    new IntersectionObserver(
+      ([entry]) => {
+        stopped = !entry.isIntersecting;
+        if (stopped) players[live].pause();
+        else if (started) players[live].play().catch(() => {});
+        else begin();
+      },
+      { threshold: 0.05 },
+    ).observe(media);
+  }
+
+  /*
+    One call, no astro:page-load listener — see the note in
+    CollectionDetail.astro. define:vars forces this script inline, and
+    Astro re-executes inline scripts on every view transition, so this runs
+    once per page view. A listener would accumulate one stale closure per
+    visit, each pinning a pair of detached <video> elements and their
+    buffers for the rest of the session.
+  */
+  initHeroFilms();
+</script>
+
+<style>
+  /* ═══════════════ HERO ═══════════════ */
+  .hero {
+    position: relative;
+    min-height: 100svh; /* svh = correct height on phones with browser chrome */
+    display: flex;
+    align-items: flex-end;
+    padding-block: calc(var(--header-h) + 3rem) clamp(3.5rem, 10vh, 6rem);
+    overflow: hidden;
+  }
+
+  .hero__media { position: absolute; inset: 0; z-index: 0; }
+
+  /*
+    The two players are stacked exactly on top of each other and cross-fade.
+    The first one is marked is-live in the markup so its poster frame is on
+    screen from the very first paint — including when JS never runs.
+  */
+  .hero__film {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Focal point of the crop. On phones the screen is tall and the whole
+       frame fits; on a wide monitor it is cropped top-and-bottom, so we
+       bias upward to keep the face and bodice in view.
+       Lower the % to show more of the top, raise it to show more skirt. */
+    object-position: center 20%;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+    pointer-events: none;
+  }
+  .hero__film.is-live { opacity: 1; }
+
+  /* Shown until a real hero photo is added — soft, sunlit warmth */
+  .hero__fallback {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(90% 70% at 72% 18%, #ffffff 0%, transparent 62%),
+      radial-gradient(85% 65% at 15% 85%, #f6e7d2 0%, transparent 60%),
+      linear-gradient(165deg, #fdfbf7 0%, #f3e8d9 55%, #efe0cd 100%);
+  }
+
+  /* Scrim — the reason hero text is always readable, on any photo.
+     A LIGHT wash: it lifts the photo toward white at the bottom, so the
+     dark headline stays legible over even a dark image. */
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(253, 251, 247, 0.3) 0%,
+      rgba(253, 251, 247, 0.42) 38%,
+      rgba(253, 251, 247, 0.9) 100%
+    );
+  }
+
+  .hero__content { position: relative; z-index: 1; }
+
+  /* ── Hero entrance ────────────────────────────────────────────
+     The first screen assembles itself instead of arriving finished.
+     `backwards` holds the start state during the delay, so nothing
+     flashes at full opacity before its turn. */
+  @keyframes hero-in {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .hero__eyebrow,
+  .hero__title,
+  .hero__tagline,
+  .hero__actions,
+  .hero__location {
+    animation: hero-in 900ms var(--ease-out) backwards;
+  }
+  .hero__eyebrow  { animation-delay: 100ms; }
+  .hero__title    { animation-delay: 200ms; }
+  .hero__tagline  { animation-delay: 320ms; }
+  .hero__actions  { animation-delay: 440ms; }
+  .hero__location { animation-delay: 560ms; }
+
+  /* The slow settling zoom that used to live here belonged to the still
+     photo. The films carry their own movement, so pushing in on top of
+     them only fought the footage. */
+
+  .hero__eyebrow {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero__title {
+    color: var(--ink);
+    font-size: clamp(3.25rem, 15vw, 9rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero__tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.35rem, 4.5vw, 2.1rem);
+    line-height: 1.35;
+    color: var(--ink-soft);
+    max-width: 20ch;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero__location {
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ═══════════════ SHARED SECTION HEADER ═══════════════ */
+  .sec-head {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: clamp(3rem, 7vw, 5rem);
+  }
+  .sec-head__aside {
+    max-width: 42ch;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .sec-foot {
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ═══════════════ INTRO ═══════════════ */
+  .intro { display: grid; gap: clamp(2.5rem, 6vw, 5rem); }
+  .intro__text p {
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    max-width: var(--max-prose);
+    margin-bottom: 1.35rem;
+  }
+  .intro__text em { font-style: italic; color: var(--ink); }
+  .intro__text .link-underline { margin-top: 0.75rem; }
+
+  /* ═══════════════ GRIDS ═══════════════ */
+  .grid-3 { display: grid; gap: clamp(2.5rem, 5vw, 3rem); }
+
+  /* ═══════════════ STEPS ═══════════════ */
+  .steps { list-style: none; padding: 0; display: grid; gap: 0; }
+  .step {
+    padding-block: 2rem;
+    border-top: 1px solid var(--line-soft);
+  }
+  .step:last-child { border-bottom: 1px solid var(--line-soft); }
+  .step__n {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    color: var(--gold-deep);
+    margin-bottom: 0.9rem;
+  }
+  .step__title { font-size: 1.5rem; margin-bottom: 0.6rem; }
+  .step__text { color: var(--muted); max-width: 40ch; line-height: 1.8; }
+
+  /* ═══════════════ QUOTES ═══════════════ */
+  .quote { margin: 0; }
+  .quote .rule { margin-bottom: 1.75rem; }
+  .quote blockquote {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  .quote figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .quote figcaption strong { font-weight: 400; color: var(--ink); }
+  .quote figcaption span { color: var(--gold-deep); }
+
+  /* ═══════════════ CTA ═══════════════ */
+  .cta {
+    /* Soft sunlit wash — the warmest moment on the page, placed exactly
+       where we ask her to book. */
+    background:
+      radial-gradient(80% 120% at 50% 0%, #ffffff 0%, transparent 55%),
+      linear-gradient(180deg, var(--warm) 0%, #f6ead8 100%);
+    padding-block: clamp(4.5rem, 11vw, 8rem);
+    text-align: center;
+  }
+  .cta__inner { display: flex; flex-direction: column; align-items: center; }
+  .cta__title { color: var(--ink); margin-bottom: 1.35rem; }
+  .cta__text {
+    color: var(--muted);
+    max-width: 46ch;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+  }
+  .cta__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .cta__phone {
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    color: var(--gold-deep);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur-hover) ease;
+  }
+  .cta__phone:hover { border-color: var(--gold-deep); }
+
+  /* ── Desktop hero: editorial split ──────────────────────────
+     On a wide screen a tall portrait would crop to a narrow band — the
+     gown would vanish and only the face remain. So the photo takes the
+     right side at nearly its own proportions, and the text sits on clean
+     ivory at the left. */
+  @media (min-width: 900px) {
+    .hero {
+      align-items: center;
+      padding-block: calc(var(--header-h) + 2rem) 3rem;
+    }
+    .hero__media { left: 46%; }
+    /* Photo and films must stay framed identically at every width. */
+    .hero__film { object-position: center 25%; }
+    .hero__scrim {
+      background: linear-gradient(
+        90deg,
+        var(--ivory) 0%,
+        rgba(253, 251, 247, 0.6) 14%,
+        rgba(253, 251, 247, 0) 46%
+      );
+    }
+    /* Only the headline and tagline are constrained — constraining the
+       eyebrow, buttons and address too would break them onto ragged
+       second lines. */
+    .hero__title {
+      font-size: clamp(3.5rem, 6.2vw, 5.5rem);
+      max-width: 12ch;
+    }
+    .hero__tagline { max-width: 26ch; }
+  }
+
+  /* ═══════════════ TABLET ═══════════════ */
+  @media (min-width: 640px) {
+    .hero__actions { flex-direction: row; }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .steps { grid-template-columns: repeat(2, 1fr); column-gap: 3rem; }
+    .step:nth-child(2) { border-bottom: 0; }
+    .cta__actions { flex-direction: row; gap: 2.5rem; }
+  }
+
+  /* ═══════════════ DESKTOP ═══════════════ */
+  @media (min-width: 900px) {
+    .sec-head {
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+      gap: 4rem;
+    }
+    .sec-head--center {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+    }
+    .intro { grid-template-columns: 1fr 1fr; align-items: center; }
+    /* Falls back to 3 columns for grids that don't set --cols (testimonials). */
+    .grid-3 { grid-template-columns: repeat(var(--cols, 3), 1fr); }
+    .steps { grid-template-columns: repeat(4, 1fr); }
+    .step { border-bottom: 1px solid var(--line-soft); }
+    .step:nth-child(2) { border-bottom: 1px solid var(--line-soft); }
+  }
+</style>

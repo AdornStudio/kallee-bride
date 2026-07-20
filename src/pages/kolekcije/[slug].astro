@@ -1,0 +1,34 @@
+---
+/**
+ * Serbian collection pages  →  /kolekcije/luminous-veil, /kolekcije/magnolious …
+ *
+ * The [slug] in the filename is a placeholder. `getStaticPaths` runs once
+ * per collection in src/data/collections.js and builds a page for each.
+ * Add a collection there and a page appears here on its own.
+ */
+import CollectionDetail from '../../components/pages/CollectionDetail.astro';
+import { collections } from '../../data/collections.js';
+import { collectionPath } from '../../data/i18n.js';
+
+export function getStaticPaths() {
+  return collections.map((collection, i) => ({
+    params: { slug: collection.slug },
+    props: {
+      collection,
+      // Previous / next collection, so a bride can browse straight through.
+      prev: collections[(i - 1 + collections.length) % collections.length],
+      next: collections[(i + 1) % collections.length],
+    },
+  }));
+}
+
+const { collection, prev, next } = Astro.props;
+---
+
+<CollectionDetail
+  collection={collection}
+  prev={prev}
+  next={next}
+  lang="sr"
+  altHref={collectionPath(collection.slug, 'en')}
+/>

@@ -1,0 +1,12 @@
+# Сборка и зависимости
+node_modules/
+dist/
+.astro/
+
+# Системное
+.DS_Store
+*.log
+
+# Плейврайт
+test-results/
+playwright-report/

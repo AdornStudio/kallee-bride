@@ -1,0 +1,238 @@
+---
+/**
+ * CONTACT PAGE — shared by both languages.
+ * All salon details come from src/data/site.js; all wording from i18n.js.
+ */
+import Layout from '../../layouts/Layout.astro';
+import { site } from '../../data/site.js';
+import { t, path as routePath } from '../../data/i18n.js';
+
+interface Props {
+  lang: 'sr' | 'en';
+  altHref: string;
+}
+const { lang, altHref } = Astro.props;
+
+const s = t(lang);
+const c = s.contact;
+
+const fullAddress = `${site.address.street}, ${site.address.postalCode} ${site.address.city}, ${site.address.country}`;
+
+// Google Maps embed. This basic embed is free and needs no API key.
+const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(fullAddress)}&z=16&output=embed`;
+const mapLink = `https://maps.google.com/?q=${encodeURIComponent(fullAddress)}`;
+---
+
+<Layout title={c.metaTitle} description={c.metaDescription} lang={lang} altHref={altHref}>
+  <section class="page-head">
+    <div class="container">
+      <span class="eyebrow">{c.eyebrow}</span>
+      <h1 set:html={c.title} />
+      <p class="page-head__lead">{c.lead}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container details">
+      <!-- Address -->
+      <div class="detail" data-reveal>
+        <h2 class="detail__title">{c.addressTitle}</h2>
+        <address>
+          <a href={mapLink} target="_blank" rel="noopener noreferrer">
+            {site.address.street}<br />
+            {site.address.postalCode} {site.address.city}<br />
+            {site.address.country}
+          </a>
+        </address>
+        <a href={mapLink} target="_blank" rel="noopener noreferrer" class="link-underline">
+          {c.openInMaps}
+        </a>
+      </div>
+
+      <!-- Hours -->
+      <div class="detail" data-reveal>
+        <h2 class="detail__title">{c.hoursTitle}</h2>
+        <ul class="hours">
+          {s.hours.map((h) => (
+            <li>
+              <span>{h.label}</span>
+              <span class={h.closed ? 'is-closed' : ''}>{h.value}</span>
+            </li>
+          ))}
+        </ul>
+        <p class="detail__note">{c.hoursNote}</p>
+      </div>
+
+      <!-- Contact -->
+      <div class="detail" data-reveal>
+        <h2 class="detail__title">{c.reachTitle}</h2>
+        <ul class="links">
+          <li><a href={`tel:${site.phoneHref}`}>{site.phone}</a></li>
+          {/* The email row appears automatically once you add an address
+              to src/data/site.js — until then nothing looks unfinished. */}
+          {site.email && <li><a href={`mailto:${site.email}`}>{site.email}</a></li>}
+          <li>
+            <a href={site.instagram.salon.url} target="_blank" rel="noopener noreferrer">
+              {site.instagram.salon.handle}
+            </a>
+            <span class="links__meta">{c.igSalon}</span>
+          </li>
+          <li>
+            <a href={site.instagram.brand.url} target="_blank" rel="noopener noreferrer">
+              {site.instagram.brand.handle}
+            </a>
+            <span class="links__meta">{c.igBrand}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--warm">
+    <div class="container visit" data-reveal>
+      <span class="eyebrow">{c.visitEyebrow}</span>
+      <h2 set:html={c.visitTitle} />
+      <div class="visit__cols">
+        <p>{c.visitP1}</p>
+        <p>{c.visitP2}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="map" aria-label={c.mapAria}>
+    <iframe
+      src={mapEmbed}
+      title={`${site.name} — ${fullAddress}`}
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen
+    ></iframe>
+  </section>
+
+  <section class="cta-band">
+    <div class="container cta-band__inner" data-reveal>
+      <span class="eyebrow">{c.ctaEyebrow}</span>
+      <h2>{c.ctaTitle}</h2>
+      <p>{c.ctaText}</p>
+      <a href={routePath('booking', lang)} class="btn">{s.bookCta}</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page-head {
+    padding-top: calc(var(--header-h) + clamp(3rem, 9vw, 6rem));
+    padding-bottom: clamp(2.5rem, 6vw, 4rem);
+    background: var(--ivory-deep);
+  }
+  .page-head__lead {
+    max-width: 54ch;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    margin-top: 1.75rem;
+  }
+
+  .details { display: grid; gap: clamp(2.5rem, 6vw, 3.5rem); }
+
+  .detail__title {
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    margin-bottom: 1.5rem;
+  }
+
+  .detail address {
+    font-style: normal;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 3vw, 1.65rem);
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+  }
+  .detail address a { text-decoration: none; }
+  .detail address a:hover { color: var(--gold-deep); }
+
+  .detail__note { margin-top: 1.25rem; font-size: 0.875rem; color: var(--muted); }
+
+  .hours { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.85rem; }
+  .hours li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: 320px;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .hours li:last-child { border-bottom: 0; }
+  /* "Zatvoreno" is real information — keep it in the readable body colour
+     rather than a decorative grey (was 3.28:1, below the 4.5:1 minimum). */
+  .hours .is-closed { color: var(--muted); }
+
+  .links { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1.35rem; }
+  .links a {
+    display: inline-block;
+    position: relative;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+    transition: border-color var(--dur-hover) ease, color var(--dur-hover) ease;
+  }
+
+  /* These are the salon's phone and Instagram — the links most worth
+     tapping, and at 29px they were below the ~44px a fingertip needs.
+     An invisible pad extends the tap area without moving the underline
+     away from the text. */
+  .links a::after {
+    content: '';
+    position: absolute;
+    inset: -9px 0;
+  }
+  .links a:hover { color: var(--gold-deep); border-color: var(--gold-deep); }
+  .links__meta {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .visit h2 { margin-bottom: clamp(1.75rem, 4vw, 2.5rem); }
+  .visit__cols { display: grid; gap: 1.5rem; }
+  .visit__cols p { line-height: 1.9; max-width: 46ch; }
+
+  .map { height: clamp(320px, 45vw, 520px); background: var(--ivory-deep); }
+  .map iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    /* Desaturated so the map sits quietly with the palette rather than
+       shouting in Google's default colours. */
+    filter: grayscale(0.85) contrast(0.92) sepia(0.12);
+  }
+
+  .cta-band {
+    background:
+      radial-gradient(80% 120% at 50% 0%, #ffffff 0%, transparent 55%),
+      linear-gradient(180deg, var(--warm) 0%, #f6ead8 100%);
+    padding-block: clamp(4rem, 10vw, 7rem);
+    text-align: center;
+  }
+  .cta-band__inner { display: flex; flex-direction: column; align-items: center; }
+  .cta-band h2 { margin-bottom: 1.25rem; }
+  .cta-band p { max-width: 46ch; line-height: 1.8; margin-bottom: 2.25rem; }
+
+  @media (min-width: 700px) {
+    .visit__cols { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
+  }
+  @media (min-width: 900px) {
+    .details { grid-template-columns: repeat(3, 1fr); gap: 4rem; }
+  }
+</style>

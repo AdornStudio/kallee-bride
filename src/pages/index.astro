@@ -1,0 +1,8 @@
+---
+// Serbian home page  →  /
+// The design lives in src/components/pages/HomePage.astro (shared with English).
+import HomePage from '../components/pages/HomePage.astro';
+import { path } from '../data/i18n.js';
+---
+
+<HomePage lang="sr" altHref={path('home', 'en')} />

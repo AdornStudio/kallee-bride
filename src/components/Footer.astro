@@ -1,0 +1,217 @@
+---
+/**
+ * Footer — used on every page via Layout.astro.
+ * All details come from src/data/site.js.
+ */
+import { site } from '../data/site.js';
+import { collections } from '../data/collections.js';
+import { t, path as routePath, collectionPath } from '../data/i18n.js';
+
+interface Props {
+  lang: 'sr' | 'en';
+}
+const { lang } = Astro.props;
+
+const s = t(lang);
+const f = s.footer;
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <!-- Brand -->
+    <div class="footer__brand">
+      <p class="footer__logo">{site.name}</p>
+      <p class="footer__tagline">
+        {f.taglineBefore} <em>{site.parentBrand}</em> {f.taglineAfter}
+      </p>
+      <a href={routePath('booking', lang)} class="btn footer__cta">{s.bookCta}</a>
+    </div>
+
+    <!-- Navigation -->
+    <div class="footer__col">
+      <h2 class="footer__heading">{f.pages}</h2>
+      <ul class="footer__list">
+        <li><a href={routePath('home', lang)}>{s.homeLabel}</a></li>
+        {s.nav.map((item) => (
+          <li><a href={routePath(item.key, lang)}>{item.label}</a></li>
+        ))}
+        <li><a href={routePath('booking', lang)}>{s.bookCta}</a></li>
+      </ul>
+    </div>
+
+    <!-- Collections -->
+    <div class="footer__col">
+      <h2 class="footer__heading">{f.collections}</h2>
+      <ul class="footer__list">
+        {collections.map((c) => (
+          <li><a href={collectionPath(c.slug, lang)}>{c.name}</a></li>
+        ))}
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div class="footer__col">
+      <h2 class="footer__heading">{f.contact}</h2>
+      <address class="footer__address">
+        <a href={`https://maps.google.com/?q=${encodeURIComponent(
+          `${site.address.street}, ${site.address.city}`
+        )}`} target="_blank" rel="noopener noreferrer">
+          {site.address.street}<br />{site.address.postalCode} {site.address.city}
+        </a>
+        <a href={`tel:${site.phoneHref}`}>{site.phone}</a>
+        {/* The email link only appears once an address is added to site.js */}
+        {site.email && <a href={`mailto:${site.email}`}>{site.email}</a>}
+        <a href={site.instagram.salon.url} target="_blank" rel="noopener noreferrer">
+          {site.instagram.salon.handle}
+        </a>
+      </address>
+
+      <h2 class="footer__heading footer__heading--spaced">{f.hours}</h2>
+      <ul class="footer__hours">
+        {s.hours.map((h) => (
+          <li>
+            <span>{h.label}</span>
+            <span class={h.closed ? 'is-closed' : ''}>{h.value}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer__bottom">
+    <p>&copy; {year} {site.name}. {f.rights}</p>
+    <p>
+      {f.gownsBy} <a href={site.instagram.brand.url} target="_blank" rel="noopener noreferrer">
+        {site.parentBrand}
+      </a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--ivory-deep);
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: clamp(3.5rem, 8vw, 6rem);
+    font-size: 0.875rem;
+  }
+
+  .footer__inner {
+    display: grid;
+    gap: 3rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .footer__logo {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+  .footer__tagline {
+    max-width: 34ch;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+  .footer__tagline em { color: var(--gold-deep); font-style: italic; }
+
+  .footer__cta { align-self: start; }
+
+  .footer__heading {
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    margin-bottom: 1.25rem;
+  }
+  .footer__heading--spaced { margin-top: 2.25rem; }
+
+  .footer__list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .footer__address {
+    font-style: normal;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .footer a {
+    text-decoration: none;
+    transition: color var(--dur-hover) ease;
+  }
+
+  /* Colour inherits from the footer text — but NOT for the booking button.
+     `.footer a` outranks `.btn`, so without this exception the button's
+     ivory text was overwritten with muted grey: 2.73:1 on near-black,
+     effectively unreadable. */
+  .footer a:not(.btn) { color: inherit; }
+
+  /* Footer links are the smallest targets on the site. As plain text they
+     were 21px tall — half the ~44px a fingertip needs, and one of them is
+     the phone number. Padding (rather than gap) grows the tappable area
+     without changing how the list looks. */
+  .footer__list a,
+  .footer__address a {
+    display: block;
+    padding-block: 0.7rem;
+  }
+  .footer__list a:hover,
+  .footer__address a:hover,
+  .footer__bottom a:hover { color: var(--ink); }
+
+  .footer__hours {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .footer__hours li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: 300px;
+  }
+  /* "Zatvoreno" is real information a bride needs to read, so it gets the
+     normal body colour rather than a decorative grey (was 2.97:1). */
+  .footer__hours .is-closed { color: var(--muted); }
+
+  .footer__bottom {
+    border-top: 1px solid var(--line);
+    padding-block: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    /* Was #857c71 — 3.59:1 on the footer's ivory-deep background, below
+       the 4.5:1 AA minimum for body text. */
+    color: var(--muted);
+  }
+  .footer__bottom a { border-bottom: 1px solid var(--line); }
+
+  @media (min-width: 640px) {
+    .footer__inner { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 1000px) {
+    .footer__inner {
+      grid-template-columns: 1.5fr 1fr 1fr 1.3fr;
+      gap: 4rem;
+    }
+    .footer__bottom {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+</style>

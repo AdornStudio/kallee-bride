@@ -1,0 +1,157 @@
+---
+/**
+ * ABOUT PAGE — shared by both languages.
+ */
+import Layout from '../../layouts/Layout.astro';
+import Figure from '../Figure.astro';
+import { site } from '../../data/site.js';
+import { t, path as routePath } from '../../data/i18n.js';
+
+interface Props {
+  lang: 'sr' | 'en';
+  altHref: string;
+}
+const { lang, altHref } = Astro.props;
+
+const s = t(lang);
+const a = s.about;
+---
+
+<Layout title={a.metaTitle} description={a.metaDescription} lang={lang} altHref={altHref}>
+  <section class="page-head">
+    <div class="container">
+      <span class="eyebrow">{a.eyebrow}</span>
+      <h1 set:html={a.title} />
+      <p class="page-head__lead">{a.lead}</p>
+    </div>
+  </section>
+
+  <!-- ═══════════ STORY ═══════════ -->
+  <section class="section">
+    <div class="container split">
+      <div class="split__text" data-reveal>
+        <span class="eyebrow">{a.storyEyebrow}</span>
+        <h2>{a.storyTitle}</h2>
+        <p>{a.storyP1a} <em>{site.parentBrand}</em>{a.storyP1b}</p>
+        <p>{a.storyP2}</p>
+      </div>
+      <div class="split__media" data-reveal>
+        <Figure src="/images/salon-2.jpg" ratio="4/5" label="Salon" alt={a.salonAlt} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PARENT BRAND ═══════════ -->
+  <section class="section section--warm">
+    <div class="container split split--reverse">
+      <div class="split__text" data-reveal>
+        <span class="eyebrow">{a.brandEyebrow}</span>
+        <h2>{site.parentBrand}</h2>
+        <p>{a.brandP1}</p>
+        <p>{a.brandP2}</p>
+        <a href={routePath('collections', lang)} class="link-underline">{a.brandLink}</a>
+      </div>
+      <div class="split__media" data-reveal>
+        <Figure
+          src="/images/gowns/luminous-veil/mia-1.jpg"
+          ratio="4/5"
+          label={site.parentBrand}
+          alt={a.brandAlt}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ TRUST ═══════════ -->
+  <section class="section">
+    <div class="container">
+      <header class="sec-head" data-reveal>
+        <span class="eyebrow">{a.trustEyebrow}</span>
+        <h2 set:html={a.trustTitle} />
+      </header>
+
+      <div class="trust">
+        {a.trust.map((item) => (
+          <div class="trust__item" data-reveal>
+            <hr class="rule" />
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CTA ═══════════ -->
+  <section class="cta-band">
+    <div class="container cta-band__inner" data-reveal>
+      <span class="eyebrow">{a.ctaEyebrow}</span>
+      <h2>{a.ctaTitle}</h2>
+      <p>{a.ctaText}</p>
+      <div class="cta-band__actions">
+        <a href={routePath('booking', lang)} class="btn">{s.bookCta}</a>
+        <a href={routePath('contact', lang)} class="btn btn--ghost">{a.ctaSecondary}</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page-head {
+    padding-top: calc(var(--header-h) + clamp(3rem, 9vw, 6rem));
+    padding-bottom: clamp(2.5rem, 6vw, 4rem);
+    background: var(--ivory-deep);
+  }
+  .page-head__lead {
+    max-width: 54ch;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    margin-top: 1.75rem;
+  }
+
+  .split { display: grid; gap: clamp(2.5rem, 6vw, 5rem); }
+  .split__text p {
+    font-size: 1.0625rem;
+    line-height: 1.9;
+    max-width: var(--max-prose);
+    margin-bottom: 1.35rem;
+  }
+  .split__text em { font-style: italic; color: var(--ink); }
+  .split__text .link-underline { margin-top: 0.75rem; }
+
+  .sec-head { margin-bottom: clamp(2.5rem, 6vw, 4rem); }
+
+  .trust { display: grid; gap: clamp(2.25rem, 5vw, 3rem); }
+  .trust__item .rule { margin-bottom: 1.5rem; }
+  .trust__item h3 { font-size: 1.35rem; margin-bottom: 0.7rem; }
+  .trust__item p { line-height: 1.8; max-width: 40ch; }
+
+  .cta-band {
+    background:
+      radial-gradient(80% 120% at 50% 0%, #ffffff 0%, transparent 55%),
+      linear-gradient(180deg, var(--warm) 0%, #f6ead8 100%);
+    padding-block: clamp(4rem, 10vw, 7rem);
+    text-align: center;
+  }
+  .cta-band__inner { display: flex; flex-direction: column; align-items: center; }
+  .cta-band h2 { margin-bottom: 1.25rem; }
+  .cta-band p { max-width: 46ch; line-height: 1.8; margin-bottom: 2.25rem; }
+  .cta-band__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  @media (min-width: 640px) {
+    .trust { grid-template-columns: repeat(2, 1fr); }
+    .cta-band__actions { flex-direction: row; max-width: none; width: auto; }
+  }
+  @media (min-width: 900px) {
+    .split { grid-template-columns: 1fr 1fr; align-items: center; }
+    /* On desktop the second block mirrors the first, for rhythm. */
+    .split--reverse .split__media { order: -1; }
+    .trust { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>

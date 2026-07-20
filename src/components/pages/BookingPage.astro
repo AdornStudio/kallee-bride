@@ -1,0 +1,433 @@
+---
+/**
+ * BOOKING PAGE — shared by both languages.
+ *
+ * A REQUEST form, not a live calendar. The salon receives the request
+ * by email and confirms the appointment manually.
+ *
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │  ⚠️  SETUP REQUIRED — the form cannot send anywhere yet.      │
+ * │                                                              │
+ * │  1. Go to https://formspree.io and create a free account.    │
+ * │  2. Create a new form; point it at the salon's email.        │
+ * │  3. Copy the endpoint it gives you. It looks like:           │
+ * │        https://formspree.io/f/xxxxxxxx                       │
+ * │  4. Paste it into FORM_ENDPOINT below, between the quotes.   │
+ * │                                                              │
+ * │  Free tier: 50 submissions per month, no card required.      │
+ * │  Until the endpoint is set, the form shows a clear notice    │
+ * │  and offers the phone number instead — it never silently     │
+ * │  swallows a bride's request.                                 │
+ * └──────────────────────────────────────────────────────────────┘
+ */
+import Layout from '../../layouts/Layout.astro';
+import { site } from '../../data/site.js';
+import { collections } from '../../data/collections.js';
+import { t } from '../../data/i18n.js';
+
+interface Props {
+  lang: 'sr' | 'en';
+  altHref: string;
+}
+const { lang, altHref } = Astro.props;
+
+const s = t(lang);
+const b = s.booking;
+
+// ⚠️ PASTE YOUR FORMSPREE ENDPOINT HERE (see the note above)
+const FORM_ENDPOINT = '';
+
+/*
+ * ── LATER: REAL BOOKING SYSTEM ──────────────────────────────────
+ * If the salon ever wants brides to pick a live slot themselves
+ * (instead of confirming by hand), this is where it plugs in:
+ *
+ *   1. Create a Calendly / Cal.com account and an event type
+ *      ("Wedding dress fitting", 90 min).
+ *   2. Replace the <form> below with their embed snippet, or add
+ *      an "or pick a slot yourself" link beside the form.
+ *
+ * Keeping this manual form alongside is usually wiser for bridal:
+ * it lets the salon control the calendar and reply personally.
+ * ────────────────────────────────────────────────────────────────
+ */
+
+// Strings the client-side script needs.
+const js = {
+  noEndpoint: b.errNoEndpoint,
+  sendError: b.errSend,
+  submitting: b.submitting,
+  submit: b.submit,
+  phone: site.phone,
+  phoneHref: site.phoneHref,
+};
+---
+
+<Layout title={b.eyebrow} description={b.metaDescription} lang={lang} altHref={altHref}>
+  <section class="booking">
+    <div class="container booking__inner">
+      <!-- ═══════════ LEFT: CONTEXT ═══════════ -->
+      <aside class="aside">
+        <span class="eyebrow">{b.eyebrow}</span>
+        <h1 set:html={b.title} />
+        <p class="aside__lead">{b.lead}</p>
+
+        <dl class="facts">
+          <div class="fact">
+            <dt>{b.factDuration}</dt>
+            <dd>{b.factDurationValue}</dd>
+          </div>
+          <div class="fact">
+            <dt>{b.factAddress}</dt>
+            <dd>{site.address.street}, {site.address.city}</dd>
+          </div>
+          <div class="fact">
+            <dt>{b.factHours}</dt>
+            <dd>
+              {s.hours.map((h) => (
+                <span class="fact__row">{h.label} — {h.value}</span>
+              ))}
+            </dd>
+          </div>
+          <div class="fact">
+            <dt>{b.factPhone}</dt>
+            <dd><a href={`tel:${site.phoneHref}`} class="fact__phone">{site.phone}</a></dd>
+          </div>
+        </dl>
+      </aside>
+
+      <!-- ═══════════ RIGHT: FORM ═══════════ -->
+      <div class="form-wrap">
+        <!-- Success message, revealed after a successful send -->
+        <div class="done" data-done hidden>
+          <hr class="rule" />
+          <h2>{b.doneTitle}</h2>
+          <p>{b.doneText}</p>
+          <p class="done__meta">
+            {b.doneMetaBefore} <a href={`tel:${site.phoneHref}`}>{site.phone}</a>.
+          </p>
+        </div>
+
+        <form class="form" data-form action={FORM_ENDPOINT} method="POST" novalidate>
+          <!-- Honeypot: invisible to brides, catches spam bots -->
+          <div class="hp" aria-hidden="true">
+            <label for="website">{b.hpLabel}</label>
+            <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="ime">{b.fName} <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="ime" name="Ime" required autocomplete="name" />
+            <p class="err" data-err-for="ime" hidden>{b.fNameErr}</p>
+          </div>
+
+          <div class="field">
+            <label for="kontakt">{b.fContact} <span class="req" aria-hidden="true">*</span></label>
+            <input
+              type="text"
+              id="kontakt"
+              name="Kontakt"
+              required
+              autocomplete="email"
+              placeholder={b.fContactPlaceholder}
+            />
+            <p class="err" data-err-for="kontakt" hidden>{b.fContactErr}</p>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="datum">{b.fDate}</label>
+              <input type="date" id="datum" name="Željeni datum" />
+            </div>
+
+            <div class="field">
+              <label for="vreme">{b.fTime}</label>
+              <select id="vreme" name="Deo dana">
+                <option value="">{b.fTimeAny}</option>
+                <option value="Prepodne">{b.fTimeAM}</option>
+                <option value="Popodne">{b.fTimePM}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="kolekcija">{b.fCollection}</label>
+            <select id="kolekcija" name="Kolekcija" data-collection>
+              <option value="">{b.fCollectionNone}</option>
+              {collections.map((c) => (
+                <option value={c.name} data-slug={c.slug}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="gosti">{b.fGuests}</label>
+              <select id="gosti" name="Broj gostiju">
+                <option value="">{b.fGuestsUnsure}</option>
+                <option value="Sama">{b.fGuestsAlone}</option>
+                <option value="1">{b.fGuestsOne}</option>
+                <option value="2">{b.fGuestsTwo}</option>
+                <option value="3">{b.fGuestsThree}</option>
+                <option value="4+">{b.fGuestsFour}</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="vencanje">{b.fWedding} <span class="opt">{b.optional}</span></label>
+              <input type="text" id="vencanje" name="Datum venčanja" placeholder={b.fWeddingPlaceholder} />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="poruka">{b.fNotes} <span class="opt">{b.optional}</span></label>
+            <textarea id="poruka" name="Napomena" rows="4" placeholder={b.fNotesPlaceholder}></textarea>
+          </div>
+
+          <!-- Shown only if sending fails, or if no endpoint is configured -->
+          <div class="notice" data-notice hidden role="alert"></div>
+
+          <button type="submit" class="btn form__submit" data-submit>{b.submit}</button>
+
+          <p class="form__fine">{b.fine}</p>
+        </form>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .booking {
+    padding-top: calc(var(--header-h) + clamp(2.5rem, 7vw, 5rem));
+    padding-bottom: clamp(4rem, 10vw, 7rem);
+  }
+  .booking__inner { display: grid; gap: clamp(3rem, 7vw, 5rem); }
+
+  .aside__lead {
+    max-width: 42ch;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    margin-top: 1.5rem;
+  }
+
+  .facts { margin-top: clamp(2.5rem, 5vw, 3.5rem); display: grid; gap: 1.5rem; }
+  .fact { padding-top: 1.25rem; border-top: 1px solid var(--line); }
+  .fact dt {
+    font-size: 0.65rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    margin-bottom: 0.5rem;
+  }
+  .fact dd { margin: 0; color: var(--ink-soft); }
+  .fact__row { display: block; }
+  .fact__phone { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--gold); }
+
+  .form-wrap { background: var(--ivory-deep); padding: clamp(1.5rem, 5vw, 2.75rem); }
+
+  .form { display: grid; gap: 1.5rem; }
+  .field { display: grid; gap: 0.5rem; }
+
+  label {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .req { color: var(--gold-deep); }
+  .opt { letter-spacing: 0.1em; text-transform: none; color: var(--muted); }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 52px; /* comfortable tap target on phones */
+    padding: 0.85rem 1rem;
+    background: var(--ivory);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    color: var(--ink);
+    font-size: 1rem;
+    transition: border-color var(--dur-hover) ease, background var(--dur-hover) ease;
+    /* Stops iOS Safari zooming in when a field is focused */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  textarea { min-height: 120px; resize: vertical; line-height: 1.7; }
+
+  input::placeholder,
+  textarea::placeholder { color: #a49a8d; }
+
+  input:focus,
+  select:focus,
+  textarea:focus { border-color: var(--gold-deep); background: #fff; outline: none; }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 2px; }
+
+  /* Custom dropdown arrow, since we removed the native one */
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a5c2e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+
+  .row { display: grid; gap: 1.5rem; }
+
+  .err { font-size: 0.8rem; color: #9d3b2f; /* 5.1:1 on sand — passes AA */ }
+  input[aria-invalid='true'] { border-color: #9d3b2f; }
+
+  .notice {
+    padding: 1rem 1.15rem;
+    background: #fdf3e6;
+    border: 1px solid var(--gold);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .notice a { color: var(--gold-deep); }
+
+  .form__submit { width: 100%; margin-top: 0.5rem; }
+  .form__fine { font-size: 0.78rem; line-height: 1.7; color: var(--muted); }
+
+  /* Honeypot — hidden from brides, visible to bots */
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  /* ═══════════ SUCCESS ═══════════ */
+  /* This is the emotional peak of the whole site — she has just asked to
+     come in. It should arrive, not blink into existence. */
+  .done {
+    padding-block: clamp(1rem, 4vw, 2rem);
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
+  }
+  .done.is-in { opacity: 1; transform: none; }
+
+  .form { transition: opacity var(--dur-ui) ease, transform var(--dur-ui) ease; }
+  .form.is-leaving { opacity: 0; transform: translateY(-8px); }
+
+  .done .rule { margin-bottom: 1.75rem; }
+  .done h2 { margin-bottom: 1rem; }
+  .done p { line-height: 1.85; margin-bottom: 1rem; max-width: 44ch; }
+  .done__meta { font-size: 0.9rem; color: var(--muted); }
+  .done__meta a { color: var(--gold-deep); }
+
+  @media (min-width: 560px) {
+    .row { grid-template-columns: 1fr 1fr; }
+    .form__submit { width: auto; justify-self: start; padding-inline: 3rem; }
+  }
+  @media (min-width: 950px) {
+    .booking__inner {
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: clamp(3rem, 6vw, 5rem);
+      align-items: start;
+    }
+  }
+</style>
+
+<script define:vars={{ FORM_ENDPOINT, js }}>
+/**
+ * Wrapped in a function and re-run on `astro:page-load`, because page
+ * transitions mean a bride can arrive here without a full page load —
+ * e.g. by tapping "Book a fitting" on a collection page.
+ */
+function initBookingForm() {
+  const form = document.querySelector('[data-form]');
+  const done = document.querySelector('[data-done]');
+  const notice = document.querySelector('[data-notice]');
+  const submit = document.querySelector('[data-submit]');
+
+  // Not on the booking page, or already wired up.
+  if (!form || form.dataset.bound) return;
+  form.dataset.bound = '1';
+
+  const phoneLink = `<a href="tel:${js.phoneHref}">${js.phone}</a>`;
+
+  /* ── Pre-fill the collection from the link she clicked ──────────
+     A "Book a fitting for this collection" button sends
+     ?kolekcija=pure-grace — we select it so she doesn't pick twice. */
+  const slug = new URLSearchParams(window.location.search).get('kolekcija');
+  if (slug) {
+    const select = document.querySelector('[data-collection]');
+    const match = select?.querySelector(`option[data-slug="${CSS.escape(slug)}"]`);
+    if (match) select.value = match.value;
+  }
+
+  /* ── Validation ─────────────────────────────────────────────── */
+  const showError = (field, show) => {
+    const msg = document.querySelector(`[data-err-for="${field.id}"]`);
+    if (msg) msg.hidden = !show;
+    field.setAttribute('aria-invalid', String(show));
+  };
+
+  const validate = () => {
+    let firstBad = null;
+    ['ime', 'kontakt'].forEach((id) => {
+      const field = document.getElementById(id);
+      const bad = !field.value.trim();
+      showError(field, bad);
+      if (bad && !firstBad) firstBad = field;
+    });
+    if (firstBad) firstBad.focus();
+    return !firstBad;
+  };
+
+  // Clear an error as soon as she starts typing.
+  ['ime', 'kontakt'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', (e) => {
+      if (e.target.value.trim()) showError(e.target, false);
+    });
+  });
+
+  /* ── Submit ─────────────────────────────────────────────────── */
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    notice.hidden = true;
+
+    if (!validate()) return;
+
+    // No endpoint configured yet — tell the truth rather than pretending
+    // the request was sent.
+    if (!FORM_ENDPOINT) {
+      notice.innerHTML = `${js.noEndpoint} ${phoneLink}.`;
+      notice.hidden = false;
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = js.submitting;
+
+    try {
+      const response = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Request failed');
+
+      // Fade the form away first, then let the confirmation rise into place.
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const OUT_MS = reduced ? 0 : 260;
+
+      form.classList.add('is-leaving');
+      setTimeout(() => {
+        form.hidden = true;
+        done.hidden = false;
+        requestAnimationFrame(() => done.classList.add('is-in'));
+        done.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+      }, OUT_MS);
+    } catch {
+      notice.innerHTML = `${js.sendError} ${phoneLink}.`;
+      notice.hidden = false;
+      submit.disabled = false;
+      submit.textContent = js.submit;
+    }
+  });
+}
+
+// Runs on first load and after every page transition.
+document.addEventListener('astro:page-load', initBookingForm);
+</script>

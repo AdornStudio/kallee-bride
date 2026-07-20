@@ -1,0 +1,7 @@
+---
+// English contact page  →  /en/contact
+import ContactPage from '../../components/pages/ContactPage.astro';
+import { path } from '../../data/i18n.js';
+---
+
+<ContactPage lang="en" altHref={path('contact', 'sr')} />

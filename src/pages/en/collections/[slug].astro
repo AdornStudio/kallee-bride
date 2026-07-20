@@ -1,0 +1,30 @@
+---
+/**
+ * English collection pages  →  /en/collections/luminous-veil …
+ * Same data, same template as the Serbian version — only `lang` differs.
+ */
+import CollectionDetail from '../../../components/pages/CollectionDetail.astro';
+import { collections } from '../../../data/collections.js';
+import { collectionPath } from '../../../data/i18n.js';
+
+export function getStaticPaths() {
+  return collections.map((collection, i) => ({
+    params: { slug: collection.slug },
+    props: {
+      collection,
+      prev: collections[(i - 1 + collections.length) % collections.length],
+      next: collections[(i + 1) % collections.length],
+    },
+  }));
+}
+
+const { collection, prev, next } = Astro.props;
+---
+
+<CollectionDetail
+  collection={collection}
+  prev={prev}
+  next={next}
+  lang="en"
+  altHref={collectionPath(collection.slug, 'sr')}
+/>

@@ -1,0 +1,134 @@
+---
+/**
+ * Figure — a photo slot.
+ *
+ * If `src` is provided it renders a real, lazy-loaded photo.
+ * If `src` is empty it renders an elegant placeholder block of the
+ * EXACT same size — so the layout never jumps when photos are added.
+ *
+ * To add a photo: drop the file in public/images/ and set the path
+ * in src/data/collections.js. Nothing here needs changing.
+ */
+interface Props {
+  src?: string;
+  alt?: string;
+  /** Aspect ratio, e.g. '3/4' for portrait gowns, '16/9' for wide shots. */
+  ratio?: string;
+  /** Small caption shown inside the placeholder only. */
+  label?: string;
+  /** Set true for images visible immediately on load (skips lazy-loading). */
+  eager?: boolean;
+  class?: string;
+}
+
+const {
+  src = '',
+  alt = '',
+  ratio = '3/4',
+  label = '',
+  eager = false,
+  class: className = '',
+} = Astro.props;
+---
+
+<figure class={`figure ${className}`} style={`--ratio: ${ratio}`}>
+  {src ? (
+    <img
+      src={src}
+      alt={alt}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      fetchpriority={eager ? 'high' : 'auto'}
+    />
+  ) : (
+    /* Placeholder — decorative only, so it is hidden from screen readers. */
+    <div class="figure__placeholder" aria-hidden="true">
+      <span class="figure__mark">KB</span>
+      {label && <span class="figure__label">{label}</span>}
+    </div>
+  )}
+</figure>
+
+<style>
+  .figure {
+    position: relative;
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    background: var(--ivory-deep);
+  }
+
+  /*
+    Height insurance. The photo is absolutely positioned, so if any engine
+    stumbles over aspect-ratio the box would collapse or drift. This spacer
+    reproduces the exact same height from the same variable: --ratio is
+    "3/4", so calc(100% / (3/4)) reads as width × 4/3 — a ratio box built
+    from padding alone, understood by every browser ever shipped.
+  */
+  .figure::before {
+    content: '';
+    display: block;
+    padding-bottom: calc(100% / (var(--ratio)));
+  }
+
+  .figure img {
+    /*
+      Absolutely positioned, not height: 100%. Safari resolves a child's
+      percentage height against an aspect-ratio parent unreliably — the
+      photo renders at its natural height and the whole card drifts.
+      Absolute inset sidesteps that entirely; the ratio box alone decides
+      the size in every engine.
+    */
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Slow, restrained zoom on hover — never on touch devices. */
+  @media (hover: hover) {
+    .figure:hover img { transform: scale(1.04); }
+  }
+
+  .figure__placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: var(--ivory-deep);
+    /* Very subtle diagonal texture so empty slots still feel considered. */
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 14px,
+      rgba(168, 140, 95, 0.045) 14px 15px
+    );
+  }
+
+  /* Inset hairline frame */
+  .figure__placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    border: 1px solid rgba(168, 140, 95, 0.3);
+  }
+
+  .figure__mark {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    opacity: 0.75;
+  }
+
+  .figure__label {
+    font-size: 0.62rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    opacity: 0.7;
+  }
+</style>

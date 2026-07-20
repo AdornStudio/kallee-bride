@@ -1,0 +1,88 @@
+---
+/**
+ * CollectionCard — one collection tile.
+ * Used on the Home page and the Collections page, in both languages,
+ * so the two always look identical. Content: src/data/collections.js
+ */
+import Figure from './Figure.astro';
+import { t, collectionPath } from '../data/i18n.js';
+
+interface Props {
+  collection: {
+    slug: string;
+    name: string;
+    short: Record<string, string>;
+    cover?: string;
+  };
+  lang: 'sr' | 'en';
+  /** Small index label, e.g. "01" */
+  index?: string;
+}
+
+const { collection, lang, index } = Astro.props;
+const s = t(lang);
+---
+
+<a href={collectionPath(collection.slug, lang)} class="card" data-reveal>
+  <Figure
+    src={collection.cover}
+    alt={`${collection.name} — ${s.collections.metaTitle}`}
+    ratio="3/4"
+    label={collection.name}
+  />
+
+  <div class="card__body">
+    {index && <span class="card__index">{index}</span>}
+    <h3 class="card__title">{collection.name}</h3>
+    <p class="card__text">{collection.short[lang]}</p>
+    <span class="card__more">{s.collections.cardMore}</span>
+  </div>
+</a>
+
+<style>
+  .card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .card__body {
+    padding-top: 1.5rem;
+    position: relative;
+  }
+
+  .card__index {
+    position: absolute;
+    top: 1.5rem;
+    right: 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    color: var(--gold-deep);
+  }
+
+  .card__title {
+    font-size: clamp(1.5rem, 3.4vw, 2rem);
+    margin-bottom: 0.6rem;
+    transition: color 0.35s ease;
+  }
+
+  .card__text {
+    font-size: 0.925rem;
+    line-height: 1.7;
+    max-width: 38ch;
+    margin-bottom: 1.1rem;
+  }
+
+  .card__more {
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--gold);
+    transition: color var(--dur-hover) ease, border-color var(--dur-hover) ease;
+  }
+
+  .card:hover .card__more { color: var(--gold-deep); border-color: var(--gold-deep); }
+</style>

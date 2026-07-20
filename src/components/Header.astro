@@ -1,0 +1,387 @@
+---
+/**
+ * Header — used on every page via Layout.astro.
+ * Edit navigation links in src/data/site.js (not here).
+ */
+import { site } from '../data/site.js';
+import { t, path as routePath } from '../data/i18n.js';
+import LangSwitch from './LangSwitch.astro';
+
+interface Props {
+  /** True on pages with a full-bleed hero (the header floats over it). */
+  transparent?: boolean;
+  lang: 'sr' | 'en';
+  /** Path to this same page in the other language. */
+  altHref: string;
+}
+const { transparent = false, lang, altHref } = Astro.props;
+
+const s = t(lang);
+
+// Used to mark the current page for screen readers and styling.
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+const home = routePath('home', lang);
+const booking = routePath('booking', lang);
+---
+
+<header class={`header ${transparent ? 'header--transparent' : ''}`} data-header>
+  <div class="header__inner">
+    <a href={home} class="header__logo" aria-label={`${site.name} — ${s.homeAria}`}>
+      {site.name}
+    </a>
+
+    <!-- Desktop navigation -->
+    <nav class="header__nav" aria-label={s.mainNav}>
+      {s.nav.map((item) => {
+        const href = routePath(item.key, lang);
+        return (
+          <a
+            href={href}
+            class="header__link"
+            aria-current={current.startsWith(href.replace(/\/$/, '')) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+    </nav>
+
+    <div class="header__actions">
+      <div class="header__lang"><LangSwitch lang={lang} altHref={altHref} /></div>
+
+      <a href={booking} class="header__cta">{s.bookCta}</a>
+
+      <!-- Mobile menu toggle -->
+      <button
+        class="header__burger"
+        type="button"
+        aria-label={s.openMenu}
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-burger
+        data-label-open={s.openMenu}
+        data-label-close={s.closeMenu}
+      >
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile full-screen menu -->
+<div class="menu" id="mobile-menu" hidden data-menu>
+  <nav class="menu__nav" aria-label={s.mobileNav}>
+    <a href={home} class="menu__link">{s.homeLabel}</a>
+    {s.nav.map((item) => (
+      <a href={routePath(item.key, lang)} class="menu__link">{item.label}</a>
+    ))}
+  </nav>
+
+  <div class="menu__footer">
+    <a href={booking} class="btn">{s.bookCta}</a>
+    <a href={`tel:${site.phoneHref}`} class="menu__phone">{site.phone}</a>
+    <LangSwitch lang={lang} altHref={altHref} variant="menu" />
+  </div>
+</div>
+
+<style>
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: var(--header-h);
+    background: var(--ivory);
+    border-bottom: 1px solid var(--line);
+    transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+  }
+
+  .header__inner {
+    /* Sits above the light gradient defined below */
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    max-width: var(--max-w);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .header__logo {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    white-space: nowrap;
+    transition: color 0.5s ease;
+  }
+
+  .header__nav { display: none; }
+
+  .header__link {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    padding-block: 0.5rem;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  .header__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 1px;
+    background: var(--gold);
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .header__link:hover::after,
+  .header__link[aria-current='page']::after { width: 100%; }
+
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* On phones the toggle lives inside the menu instead — the header bar is
+     too narrow for the logo, a language switch and a burger at 360px. */
+  .header__lang { display: none; }
+
+  .header__cta {
+    display: none;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ivory);
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 0.85rem 1.75rem;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+  .header__cta:hover { background: transparent; color: var(--ink); }
+
+  /* ── Burger ───────────────────────────────────────────────── */
+  .header__burger {
+    width: 48px;
+    height: 48px;
+    margin-right: -12px;
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .header__burger span {
+    display: block;
+    width: 26px;
+    height: 1px;
+    background: var(--ink);
+    transition: transform 0.4s ease, opacity 0.3s ease, background 0.5s ease;
+  }
+
+  /* ── Transparent state (floating over the light hero) ──────
+     The hero is now light, so the header keeps its dark text and
+     simply drops its background and bottom border. */
+  .header--transparent:not(.is-scrolled) {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  /* A whisper of light under the header while it floats over the hero
+     photo. Without it the logo and menu sit directly on the image and
+     their contrast depends on whatever happens to be behind them. */
+  .header--transparent:not(.is-scrolled)::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 -40px 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(253, 251, 247, 0.85) 0%,
+      rgba(253, 251, 247, 0.55) 55%,
+      rgba(253, 251, 247, 0) 100%
+    );
+  }
+
+  /* Burger becomes an X while the menu is open */
+  .header.is-menu-open .header__burger span:first-child { transform: translateY(3.5px) rotate(45deg); }
+  .header.is-menu-open .header__burger span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+  .header.is-menu-open { background: transparent; border-color: transparent; }
+
+  /* ── Mobile menu overlay ──────────────────────────────────── */
+  .menu {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: var(--ivory);
+    padding: calc(var(--header-h) + 3rem) var(--gutter) 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out);
+  }
+  .menu[hidden] { display: none; }
+  .menu.is-open { opacity: 1; }
+
+  /* Menu items rise into place in sequence rather than all appearing at
+     once — the panel reads as unfolding instead of switching on. */
+  .menu__link,
+  .menu__footer {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+  }
+  .menu.is-open .menu__link,
+  .menu.is-open .menu__footer {
+    opacity: 1;
+    transform: none;
+  }
+  .menu.is-open .menu__link:nth-child(1) { transition-delay: 80ms; }
+  .menu.is-open .menu__link:nth-child(2) { transition-delay: 140ms; }
+  .menu.is-open .menu__link:nth-child(3) { transition-delay: 200ms; }
+  .menu.is-open .menu__link:nth-child(4) { transition-delay: 260ms; }
+  .menu.is-open .menu__footer { transition-delay: 320ms; }
+
+  .menu__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .menu__link {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 11vw, 3.25rem);
+    font-weight: 300;
+    color: var(--ink);
+    text-decoration: none;
+    padding-block: 0.35rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .menu__footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .menu__phone {
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    color: var(--gold-deep);
+    text-decoration: none;
+  }
+
+  /* ── Desktop ──────────────────────────────────────────────── */
+  @media (min-width: 900px) {
+    :root { --header-h: 88px; }
+    .header { height: 88px; }
+    .header__nav { display: flex; gap: 2.75rem; }
+    .header__cta { display: inline-flex; }
+    .header__lang { display: block; }
+    .header__burger { display: none; }
+    .menu { display: none !important; }
+    .header__logo { font-size: 1.5rem; }
+  }
+</style>
+
+<script>
+  // These are re-pointed at the new page's elements after each navigation.
+  let header: Element | null = null;
+  let burger: Element | null = null;
+  let menu: Element | null = null;
+
+  // Pending "hide the menu" timer. Kept at module scope so it can be
+  // cancelled — see setMenu().
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const MENU_ANIM_MS = 450; // must match the .menu transition in the CSS above
+
+  // ── Solid header once the page is scrolled ──────────────────
+  // Registered once, on window, so navigating never stacks up listeners.
+  const onScroll = () => {
+    header?.classList.toggle('is-scrolled', window.scrollY > 24);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // ── Mobile menu open/close ──────────────────────────────────
+  const setMenu = (open: boolean) => {
+    if (!menu || !burger || !header) return;
+
+    // Cancel any pending hide. Without this, opening the menu again within
+    // 450ms of closing it lets the old timer fire and hide a menu that is
+    // supposed to be open — the burger shows an X over an empty screen.
+    clearTimeout(hideTimer);
+
+    burger.setAttribute('aria-expanded', String(open));
+    // Labels come from data attributes so they stay in the page's language.
+    const el = burger as HTMLElement;
+    burger.setAttribute(
+      'aria-label',
+      (open ? el.dataset.labelClose : el.dataset.labelOpen) || ''
+    );
+    header.classList.toggle('is-menu-open', open);
+    // Stop the page behind the menu from scrolling.
+    document.body.style.overflow = open ? 'hidden' : '';
+
+    if (open) {
+      menu.removeAttribute('hidden');
+      // Next frame, so the entrance transition actually runs.
+      requestAnimationFrame(() => menu!.classList.add('is-open'));
+    } else {
+      menu.classList.remove('is-open');
+      hideTimer = setTimeout(() => menu!.setAttribute('hidden', ''), MENU_ANIM_MS);
+    }
+  };
+
+  // Close on Escape — expected keyboard behaviour. Registered once.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && burger?.getAttribute('aria-expanded') === 'true') {
+      setMenu(false);
+      (burger as HTMLElement).focus();
+    }
+  });
+
+  // ── Wire up (runs on first load and after every page transition) ──
+  function initHeader() {
+    header = document.querySelector('[data-header]');
+    burger = document.querySelector('[data-burger]');
+    menu = document.querySelector('[data-menu]');
+
+    clearTimeout(hideTimer);
+    // A navigation can happen mid-menu; make sure the page can scroll.
+    document.body.style.overflow = '';
+
+    onScroll();
+
+    // `dataset.bound` guards against binding the same element twice if this
+    // ever runs more than once for the same DOM.
+    if (burger && !(burger as HTMLElement).dataset.bound) {
+      (burger as HTMLElement).dataset.bound = '1';
+      burger.addEventListener('click', () => {
+        setMenu(burger!.getAttribute('aria-expanded') !== 'true');
+      });
+    }
+
+    menu?.querySelectorAll('a').forEach((link) => {
+      if ((link as HTMLElement).dataset.bound) return;
+      (link as HTMLElement).dataset.bound = '1';
+      link.addEventListener('click', () => setMenu(false));
+    });
+  }
+
+  document.addEventListener('astro:page-load', initHeader);
+</script>
