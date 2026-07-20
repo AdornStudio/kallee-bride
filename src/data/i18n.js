@@ -377,7 +377,7 @@ export const ui = {
       introTitle: 'Gowns chosen without hurry.',
       introP1a: 'Kallee Bride is the exclusive home of',
       introP1b:
-        'in Novi Sad. At our salon on Trg mladenaca every fitting is booked in advance and lasts as long as it needs to — no crowds, no pressure, and no sense that someone is waiting for your slot.',
+        'in Novi Sad. At our salon on Trg mladenaca every fitting is booked in advance and lasts as long as it needs to — no crowds, no pressure, and no sense that someone is waiting behind you.',
       introP2:
         'We believe the right gown is never found in a rush. So we see one bride at a time, and give her the whole room, our full attention, and all the time she needs.',
       introLink: 'More about the salon',
@@ -407,7 +407,7 @@ export const ui = {
         {
           n: '03',
           title: 'The fitting',
-          text: 'For that appointment the salon is yours alone. Try on as much as you like, with the people closest to you.',
+          text: 'For that appointment the salon is yours alone. Try on as many as you like, with the people closest to you.',
         },
         {
           n: '04',
@@ -474,7 +474,7 @@ export const ui = {
         'The story of Kallee Bride in Novi Sad — exclusive home of Lana Grace Bridal. What a fitting is like, and why brides choose us.',
       eyebrow: 'The salon',
       title: 'Where a gown is<br />chosen calmly.',
-      lead: 'Kallee Bride is a bridal salon in the very centre of Novi Sad, on Trg mladenaca. We work differently from most: no crowds, no catalogue flipped through in a hurry, and no sense that someone is waiting for your slot.',
+      lead: 'Kallee Bride is a bridal salon in the very centre of Novi Sad, on Trg mladenaca. We work differently from most: no crowds, no catalogue to flip through in a hurry, and no sense that someone is waiting behind you.',
 
       storyEyebrow: 'Our story',
       storyTitle: 'One brand, chosen carefully.',
@@ -501,7 +501,7 @@ export const ui = {
         },
         {
           title: 'One bride at a time',
-          text: 'We never book two fittings at once. For that hour the salon, the mirror and our attention belong to you alone.',
+          text: 'We never book two fittings at once. While you are with us, the salon, the mirror and our attention belong to you alone.',
         },
         {
           title: 'Handwork and lace',
@@ -528,7 +528,7 @@ export const ui = {
         'Kallee Bride — Trg mladenaca 8, Novi Sad. Opening hours, phone and map. Book a wedding dress fitting.',
       eyebrow: 'Contact',
       title: 'Find us in the centre<br />of Novi Sad.',
-      lead: 'The salon is on Trg mladenaca, a few minutes on foot from Zmaj Jovina and the Cathedral. Fittings are by appointment only — that way we know the time is yours alone.',
+      lead: 'The salon is on Trg mladenaca, a few minutes on foot from Zmaj Jovina and the Cathedral. Fittings are by appointment only — that way the time is yours alone.',
 
       addressTitle: 'Address',
       openInMaps: 'Open in Google Maps',
@@ -541,9 +541,9 @@ export const ui = {
       visitEyebrow: 'Your visit',
       visitTitle: 'What to bring<br />to a fitting.',
       visitP1:
-        'Bring shoes with a heel close to the ones you plan to wear, and skip make-up that transfers easily onto fabric. Otherwise, simply come as you are — the rest is on us.',
+        'Bring shoes with a heel height close to the shoes you plan to wear, and skip make-up that transfers easily onto fabric. Otherwise, simply come as you are — the rest is on us.',
       visitP2:
-        'We suggest bringing no more than two or three people. Experience has taught us that too many opinions at once makes the decision harder, not easier.',
+        'We suggest bringing no more than two or three people. Experience has taught us that too many opinions at once make the decision harder, not easier.',
 
       mapAria: 'Map of the salon location',
       ctaEyebrow: 'Booking',
@@ -559,7 +559,7 @@ export const ui = {
       title: 'Book<br />a fitting.',
       lead: 'Fill in the form and we will get back to you within one business day to confirm your appointment. Fittings are free and commit you to nothing.',
 
-      factDuration: 'Length',
+      factDuration: 'Duration',
       factDurationValue: 'About 90 minutes, yours alone',
       factAddress: 'Address',
       factHours: 'Opening hours',
