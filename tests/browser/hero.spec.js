@@ -44,6 +44,41 @@ test('видео запускается само', async ({ page }) => {
     .toBe(true);
 });
 
+test('если браузер отказал в автозапуске, видео стартует после действия человека', async ({
+  page,
+}) => {
+  /*
+    Ловит возврат ошибки, из-за которой первый экран навсегда застывал
+    на кадре-заставке. Браузер отказывает в автозапуске по причинам,
+    которых со страницы не видно: энергосбережение, запрет автозапуска
+    для сайта, расширение. Проверяем, что одно действие человека всё
+    чинит.
+  */
+  await page.addInitScript(() => {
+    let refusals = 1; // отказать ровно один раз, как настоящий браузер
+    const real = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      if (refusals-- > 0) return Promise.reject(new DOMException('нет', 'NotAllowedError'));
+      return real.apply(this, arguments);
+    };
+  });
+  await page.reload();
+
+  // Сначала видео стоять должно — отказ отработал.
+  await expect
+    .poll(async () => live(page).evaluate((v) => v.paused), { timeout: 5_000 })
+    .toBe(true);
+
+  await page.mouse.click(400, 400);
+
+  await expect
+    .poll(async () => live(page).evaluate((v) => !v.paused && v.currentTime > 0), {
+      timeout: 10_000,
+      message: 'после клика видео так и не пошло — первый экран остался картинкой',
+    })
+    .toBe(true);
+});
+
 test('ролики сменяют друг друга', async ({ page }) => {
   const first = await live(page).getAttribute('src');
   expect(first).toBeTruthy();

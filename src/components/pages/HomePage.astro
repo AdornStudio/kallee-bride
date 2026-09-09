@@ -358,6 +358,14 @@ const testimonials = {
      * again, instead of giving up after a single attempt and leaving the
      * hero frozen on its poster for the rest of the visit.
      */
+    /*
+      Любое действие человека снимает запрет на автозапуск, каким бы он
+      ни был. Ловим первое же и пробуем снова — иначе первый экран
+      навсегда застыл бы на кадре-заставке.
+    */
+    const NUDGES = ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'];
+    const nudge = () => begin();
+
     let started = false;
     const begin = () => {
       if (started || stopped || document.hidden) return;
@@ -367,6 +375,8 @@ const testimonials = {
         .play()
         .then(() => {
           started = true;
+          // Сработало — подсказки больше не нужны.
+          NUDGES.forEach((e) => removeEventListener(e, nudge));
           scheduleNext(player);
         })
         .catch(() => {
@@ -376,6 +386,21 @@ const testimonials = {
     };
 
     document.addEventListener('visibilitychange', begin);
+
+    /*
+      Последняя линия обороны.
+
+      Браузер может отказать в автозапуске по причинам, которых со
+      страницы не видно: режим энергосбережения, настройка автозапуска
+      для конкретного сайта, расширение. Тогда первый экран навсегда
+      застывал бы на кадре-заставке, и человек справедливо сказал бы,
+      что видео не работает.
+
+      Любое действие человека — прокрутка, касание, клик, нажатие
+      клавиши — снимает все эти запреты. Ловим первое же и пробуем
+      ещё раз. Слушатели снимают себя сами, поэтому ничего не копится.
+    */
+    NUDGES.forEach((e) => addEventListener(e, nudge, { passive: true }));
 
     /*
       The observer is the only starter.
