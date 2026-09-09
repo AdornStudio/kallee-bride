@@ -9,6 +9,8 @@
  * To add a photo: drop the file in public/images/ and set the path
  * in src/data/collections.js. Nothing here needs changing.
  */
+import { asset } from '../lib/asset.js';
+
 interface Props {
   src?: string;
   alt?: string;
@@ -34,7 +36,7 @@ const {
 <figure class={`figure ${className}`} style={`--ratio: ${ratio}`}>
   {src ? (
     <img
-      src={src}
+      src={asset(src)}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"

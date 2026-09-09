@@ -109,7 +109,8 @@ test('ролики первого экрана и их заставка суще
     assert.ok(existsSync(publicPath(film)), `нет файла ${film}`);
   }
 
-  const poster = source.match(/heroPoster = '([^']+)'/)?.[1];
+  // Путь может быть обёрнут в asset(...) — для подпапки на GitHub Pages.
+  const poster = source.match(/heroPoster = (?:asset\()?'([^']+)'/)?.[1];
   assert.ok(poster, 'heroPoster не задан');
   assert.ok(existsSync(publicPath(poster)), `нет файла заставки ${poster}`);
 });

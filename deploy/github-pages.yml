@@ -1,0 +1,101 @@
+# ─────────────────────────────────────────────────────────────
+#  АВТОМАТИЧЕСКАЯ ПУБЛИКАЦИЯ САЙТА НА GITHUB PAGES
+# ─────────────────────────────────────────────────────────────
+#  Срабатывает при каждой отправке изменений в ветку main.
+#  Ничего запускать вручную не нужно: GitHub сам соберёт сайт
+#  и выложит его. Через пару минут обновления уже на адресе.
+#
+#  Перед сборкой прогоняются проверки. Если что-то сломано —
+#  публикация останавливается, и на сайт это не попадёт.
+# ─────────────────────────────────────────────────────────────
+name: Публикация сайта
+
+on:
+  push:
+    branches: [main]
+  # Кнопка «запустить вручную» на вкладке Actions.
+  workflow_dispatch:
+
+# Права, которые нужны GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Если отправить несколько изменений подряд, публикуется последнее.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Сборка
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Проверки содержимого
+        run: npm test
+
+      - name: Определить адрес сайта
+        id: addr
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          # Репозиторий вида «имя.github.io» лежит в корне домена,
+          # у остальных сайт находится в подпапке с именем репозитория.
+          if [ "$(echo "$REPO" | tr '[:upper:]' '[:lower:]')" = "$(echo "$OWNER" | tr '[:upper:]' '[:lower:]').github.io" ]; then
+            echo "base=" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=/$REPO" >> "$GITHUB_OUTPUT"
+          fi
+          echo "site=https://$(echo "$OWNER" | tr '[:upper:]' '[:lower:]').github.io" >> "$GITHUB_OUTPUT"
+
+      - name: Собрать сайт
+        run: npm run build
+        env:
+          SITE_URL: ${{ steps.addr.outputs.site }}
+          BASE_PATH: ${{ steps.addr.outputs.base }}
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    name: Публикация
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - id: pages
+        uses: actions/deploy-pages@v4
+
+# ─────────────────────────────────────────────────────────────
+#  ПОЧЕМУ ЭТОТ ФАЙЛ ЛЕЖИТ ЗДЕСЬ, А НЕ В .github/workflows/
+# ─────────────────────────────────────────────────────────────
+#  GitHub запрещает загружать файлы автосборки, если у доступа
+#  нет отдельного права «workflow». У текущего его нет.
+#
+#  Чтобы включить автоматическую сборку — выдайте право и
+#  перенесите файл на место:
+#
+#      /Users/mak/.local/ghcli/gh_2.96.0_macOS_arm64/bin/gh \
+#        auth refresh -s workflow
+#
+#      mkdir -p .github/workflows
+#      git mv deploy/github-pages.yml .github/workflows/deploy.yml
+#      git commit -m "Автосборка сайта" && git push
+#
+#  До этого сайт обновляется командой `npm run deploy` — она
+#  собирает страницы и выкладывает их сама.
+# ─────────────────────────────────────────────────────────────

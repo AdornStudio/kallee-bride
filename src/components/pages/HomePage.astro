@@ -10,6 +10,7 @@ import CollectionCard from '../CollectionCard.astro';
 import { site } from '../../data/site.js';
 import { featuredCollections } from '../../data/collections.js';
 import { t, path as routePath } from '../../data/i18n.js';
+import { asset } from '../../lib/asset.js';
 
 interface Props {
   lang: 'sr' | 'en';
@@ -27,20 +28,27 @@ const h = s.home;
  * waiting on 12 MB of video. To change the rotation: re-order, add or
  * remove lines. An empty list falls back to the warm gradient panel.
  */
-const heroFilms = ['/videos/olivia.mp4', '/videos/mia.mp4', '/videos/holly.mp4'];
+const heroFilms = ['/videos/olivia.mp4', '/videos/mia.mp4', '/videos/holly.mp4'].map(asset);
 
 /**
  * The opening frame of the FIRST clip above, so the still and the moving
  * image are the same picture. Re-cut it if you re-order heroFilms —
  * otherwise the hero visibly jumps when playback starts.
  */
-const heroPoster = '/images/hero-poster.jpg';
+const heroPoster = asset('/images/hero-poster.jpg');
 
 /**
- * ⚠️  TODO — REPLACE WITH REAL TESTIMONIALS
- * These are PLACEHOLDER quotes written to show the design. They are NOT
- * real brides. Replace with genuine reviews (with permission) before launch.
+ * ⚠️  ОТЗЫВЫ СЕЙЧАС СКРЫТЫ
+ *
+ * Цитаты ниже — ЗАГЛУШКИ. Это не настоящие невесты: тексты написаны,
+ * чтобы показать вёрстку. Публиковать их как реальные отзывы нельзя,
+ * поэтому блок выключен и на сайте не показывается.
+ *
+ * Чтобы вернуть раздел: замените цитаты настоящими отзывами (с согласия
+ * авторов) и поставьте здесь true.
  */
+const showTestimonials = false;
+
 const testimonials = {
   sr: [
     { quote: 'Obišla sam pet salona i nigde se nisam osećala ovako mirno. Ovde niko nije žurio, ni mene ni sebe.', name: 'Milica', meta: 'venčanje 2024.' },
@@ -181,29 +189,31 @@ const testimonials = {
   </section>
 
   <!-- ═══════════════ 5. TESTIMONIALS ═══════════════ -->
-  <section class="section">
-    <div class="container">
-      <header class="sec-head sec-head--center" data-reveal>
-        <div>
-          <span class="eyebrow">{h.testimonialsEyebrow}</span>
-          <h2 set:html={h.testimonialsTitle} />
-        </div>
-      </header>
+  {showTestimonials && (
+    <section class="section">
+      <div class="container">
+        <header class="sec-head sec-head--center" data-reveal>
+          <div>
+            <span class="eyebrow">{h.testimonialsEyebrow}</span>
+            <h2 set:html={h.testimonialsTitle} />
+          </div>
+        </header>
 
-      <div class="grid-3 quotes">
-        {testimonials[lang].map((item) => (
-          <figure class="quote" data-reveal>
-            <hr class="rule" />
-            <blockquote>{item.quote}</blockquote>
-            <figcaption>
-              <strong>{item.name}</strong>
-              <span>{item.meta}</span>
-            </figcaption>
-          </figure>
-        ))}
+        <div class="grid-3 quotes">
+          {testimonials[lang].map((item) => (
+            <figure class="quote" data-reveal>
+              <hr class="rule" />
+              <blockquote>{item.quote}</blockquote>
+              <figcaption>
+                <strong>{item.name}</strong>
+                <span>{item.meta}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  )}
 
   <!-- ═══════════════ 6. BOOKING CTA ═══════════════ -->
   <section class="cta">

@@ -7,6 +7,7 @@ import Layout from '../../layouts/Layout.astro';
 import Figure from '../Figure.astro';
 import { site } from '../../data/site.js';
 import { t, path as routePath, collectionPath } from '../../data/i18n.js';
+import { asset } from '../../lib/asset.js';
 
 interface Props {
   collection: any;
@@ -29,8 +30,8 @@ const bookingLink = `${routePath('booking', lang)}?kolekcija=${collection.slug}`
 const galleryData = collection.gowns.map((g: any) => ({
   name: g.name,
   alt: g.alt[lang],
-  images: g.images ?? [],
-  video: g.video ?? '',
+  images: (g.images ?? []).map(asset),
+  video: asset(g.video ?? ''),
 }));
 ---
 

@@ -10,6 +10,8 @@
  * ─────────────────────────────────────────────────────────────
  */
 
+import { asset } from '../lib/asset.js';
+
 export const defaultLang = 'sr';
 export const langs = ['sr', 'en'];
 
@@ -34,11 +36,18 @@ export const routes = {
   booking: { sr: '/zakazivanje', en: '/en/book-a-fitting' },
 };
 
+/*
+  Ссылки проходят через asset(): если сайт лежит в подпапке (GitHub
+  Pages), к адресу добавляется её имя. На своём домене — ничего не
+  меняется. Сами адреса в `routes` остаются чистыми, поэтому проверки
+  читают их напрямую.
+*/
+
 /** Ссылка на страницу: path('collections', 'en') → '/en/collections' */
-export const path = (key, lang) => routes[key][lang];
+export const path = (key, lang) => asset(routes[key][lang]);
 
 /** Ссылка на конкретную коллекцию. */
-export const collectionPath = (slug, lang) => `${routes.collections[lang]}/${slug}`;
+export const collectionPath = (slug, lang) => asset(`${routes.collections[lang]}/${slug}`);
 
 /** Другой язык — для кнопки переключения. */
 export const otherLang = (lang) => (lang === 'sr' ? 'en' : 'sr');

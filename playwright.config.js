@@ -3,8 +3,13 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Настройка браузерных проверок.
  *
- * Сервер поднимается сам перед запуском и гасится после — отдельно
- * запускать `npm run dev` не нужно.
+ * Проверяется СОБРАННЫЙ сайт, а не сервер разработки: именно эти файлы
+ * попадут на хостинг, и они отличаются от того, что отдаёт `npm run dev`.
+ *
+ * Свой порт (4323) — чтобы проверки не мешали открытому у вас серверу
+ * разработки и не подхватывали чужой сайт с соседнего порта.
+ *
+ * Сборка и сервер поднимаются сами; запускать ничего заранее не нужно.
  */
 export default defineConfig({
   testDir: './tests/browser',
@@ -12,7 +17,7 @@ export default defineConfig({
   reporter: [['list']],
 
   use: {
-    baseURL: 'http://localhost:4321',
+    baseURL: 'http://localhost:4323',
     // Скриншот и запись остаются только от упавших проверок — по ним
     // видно, что именно пошло не так.
     screenshot: 'only-on-failure',
@@ -28,9 +33,11 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:4321',
-    reuseExistingServer: true,
-    timeout: 60_000,
+    command: 'npm run build && npx astro preview --port 4323',
+    url: 'http://localhost:4323',
+    // Всегда поднимать свой: иначе проверки могли бы подхватить чужой
+    // сервер и пройти по неизвестно какой версии сайта.
+    reuseExistingServer: false,
+    timeout: 120_000,
   },
 });
